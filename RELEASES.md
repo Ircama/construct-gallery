@@ -65,7 +65,7 @@ python3 -m pip install construct-gallery
 python3
 import wx  # (not needed for strict testing)
 from construct_gallery import ConstructGallery, GalleryItem
-from bleak_construct import BleakConstruct
+from bleak_scanner_construct import BleakScannerConstruct
 from collections import OrderedDict  # (not needed for strict testing)
 from bleak import BleakScanner  # pip3 install bleak (not needed for strict testing)
 quit()
@@ -91,12 +91,18 @@ cd <repository directory>
 
 ## Local build (using build):
 
+Prerequisite:
+
+```shell
+pip3 install build
+```
+
+Command:
+
 ```shell
 python3 -m build --sdist --wheel --outdir dist/ .
 python3 -m twine upload --repository testpypi dist/*
 ```
-
-(change *testpypi*)
 
 ## Local build (using setup):
 
@@ -105,16 +111,12 @@ python3 setup.py sdist bdist_wheel
 python3 -m twine upload --repository testpypi dist/*
 ```
 
-(change *testpypi*)
-
 ## Local build (using build versions):
 
 ```shell
 GITHUB_RUN_NUMBER=31 python3 setup.py sdist bdist_wheel
 python3 -m twine upload --repository testpypi dist/*
 ```
-
-(change *testpypi*)
 
 ## Removing directories
 

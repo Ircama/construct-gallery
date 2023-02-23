@@ -3,4 +3,4 @@
 #############################################################################
 
 from construct_gallery import ConstructGallery, GalleryItem
-from bleak_construct import BleakConstruct
+from bleak_scanner_construct import BleakScannerConstruct

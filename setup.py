@@ -97,7 +97,7 @@ setup(
     # packages=find_packages(),  # VERIFY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     packages=[
         "construct-gallery",
-        "bleak_construct",
+        "bleak_scanner_construct",
         "pyshell_plugin",
         "wx_logging_plugin",
         "decimal_convert_plugin",

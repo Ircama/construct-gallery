@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #############################################################################
-# bleak_construct module
+# bleak_scanner_construct module
 #############################################################################
 
 from bleak import BleakScanner  # pip3 install bleak
@@ -75,7 +75,7 @@ class FilterEntryDialog(wx.Dialog):
         return self.name_input.GetValue()
 
 
-class BleakConstruct(ConstructGallery):
+class BleakScannerConstruct(ConstructGallery):
     bleak_stop_event = None
     bleak_event_loop = None
     bluetooth_thread = None
@@ -207,6 +207,7 @@ class BleakConstruct(ConstructGallery):
             await self.bleak_stop_event.wait()
         logging.warning("BLE thread stopped")
 
+    # This method must be overridden
     def bleak_advertising(self, device, advertisement_data):
         logging.info(
             "Advertising: device=%s, advertisement_data=%s",
@@ -216,8 +217,8 @@ class BleakConstruct(ConstructGallery):
 if __name__ == "__main__":
     app = wx.App(False)
     frame = wx.Frame(
-        None, title="BleakConstructFrame", size=(1000, 600))
+        None, title="BleakScannerConstructFrame", size=(1000, 600))
     frame.CreateStatusBar()
-    BleakConstruct(frame)
+    BleakScannerConstruct(frame)
     frame.Show(True)
     app.MainLoop()
