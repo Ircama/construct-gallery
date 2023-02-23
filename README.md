@@ -6,9 +6,11 @@ The following Python modules are included:
 
 - `construct_gallery.py`, providing the `ConstructGallery()` class.
 
-  This module implements a GUI editor to parse and build an editable and ordered list of binary data via a gallery of predefined [construct](https://construct.readthedocs.io/en/latest/) data structures. *construct* is a powerful declarative and symmetrical parser and builder for binary data.
+  This module implements a GUI editor to parse and build an editable and ordered list of binary data via a gallery of predefined [construct](https://construct.readthedocs.io/en/latest/) data structures.
   
-  The component is based on [wxPython](https://www.wxpython.org/) and [construct-editor](https://github.com/timrid/construct-editor). It relies on the excellent editing widgets provided by the *construct-editor* module and offers a superset of features compared with its standard [GUI](https://github.com/timrid/construct-editor/blob/main/construct_editor/main.py).
+  *construct* is a powerful, declarative, symmetrical parser and builder for binary data.
+  
+  `construct_gallery.py` is based on [wxPython](https://www.wxpython.org/) and [construct-editor](https://github.com/timrid/construct-editor): it relies on the excellent editing widgets provided by the *construct-editor* module and offers a superset of features compared with its standard [GUI](https://github.com/timrid/construct-editor/blob/main/construct_editor/main.py).
   
   This module can be directly used in GUI programs, or can be further extended with `bleak_scanner_construct.py`.
 
@@ -327,6 +329,46 @@ frame.Show(True)
 app.MainLoop()
 ```
 
+### construct-gallery module
+
+```mermaid
+classDiagram
+    BleakScannerConstruct --|> ConstructGallery
+    ConstructGallery --> WxConstructHexEditor
+
+    class BleakScannerConstruct{
+        filter_hint_mac
+        filter_hint_name
+
+        reference_label="MAC address"
+        load_menu_label="Log Data and Configuration"
+        clear_label="Log Data"
+        added_data_label="Logging data"
+        logging_plugin=True
+    }
+
+    class ConstructGallery{
+        parent
+
+        load_menu_label="Gallery Data"
+        clear_label="Gallery"
+        reference_label=None
+        key_label=None
+        description_label=None
+        added_data_label=""
+        loadfile=None
+        gallery_descriptor=None
+        ordered_samples=None
+        ref_key_descriptor=None
+        default_gallery_selection=0
+        col_name_width=None
+        col_type_width=None
+        col_value_width=None
+        run_shell_plugin=True
+        run_hex_editor_plugins=True
+    }
+```
+
 ### construct-editor module
 
 ```mermaid
@@ -352,7 +394,7 @@ import wx
 import construct as cs
 from construct_gallery import ConstructGallery, GalleryItem
 from collections import OrderedDict
-from bleak_scanner_construct import BleakScannerConstruct
+from construct_gallery import BleakScannerConstruct
 from bleak import BleakScanner
 
 bc = BleakScannerConstruct(

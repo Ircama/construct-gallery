@@ -20,15 +20,15 @@ import typing as t
 from types import TracebackType, ModuleType
 import os
 import wx.lib.dialogs
-import allow_python_expr_plugin
-import decimal_convert_plugin
-import string_convert_plugin
+from . import allow_python_expr_plugin
+from . import decimal_convert_plugin
+from . import string_convert_plugin
 from construct_editor.wx_widgets.wx_exception_dialog import (
     ExceptionInfo,
     WxExceptionDialog,
 )
 from construct_editor.wx_widgets.wx_hex_editor import ContextMenuItem
-from pyshell_plugin import PyShellPlugin
+from .pyshell_plugin import PyShellPlugin
 import re
 import dataclasses
 import construct as cs

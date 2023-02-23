@@ -6,7 +6,7 @@
 
 from bleak import BleakScanner  # pip3 install bleak
 import wx
-from wx_logging_plugin import WxLogging
+from .wx_logging_plugin import WxLogging
 import logging
 from construct_gallery import ConstructGallery
 import re
