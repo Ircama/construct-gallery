@@ -25,7 +25,7 @@ DESCRIPTION = ("construct-gallery GUI (based on wxPython) and development module
 
 PACKAGE_NAME = "construct-gallery"
 
-VERSIONFILE = "construct-gallery/__version__.py"
+VERSIONFILE = "construct_gallery/__version__.py"
 
 ###########################################################################
 
@@ -93,9 +93,8 @@ setup(
     author="Ircama",
     url="https://github.com/Ircama/construct-gallery",
     license='CC-BY-NC-SA-4.0',
-    # packages=find_packages(),  # VERIFY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     packages=[
-        "construct-gallery",
+        "construct_gallery",
         "bleak_scanner_construct",
         "pyshell_plugin",
         "wx_logging_plugin",
@@ -104,11 +103,11 @@ setup(
         "allow_python_expr_plugin",
     ],
     package_data={
-        "construct-gallery": ["py.typed"],
+        "construct_gallery": ["py.typed"],
     },
     entry_points={
         "gui_scripts": [
-            "construct-gallery=construct-gallery.main:main"
+            "construct-gallery=construct_gallery.main:main"
         ]
     },
     include_package_data=True,
