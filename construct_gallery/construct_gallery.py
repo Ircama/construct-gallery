@@ -33,6 +33,7 @@ import re
 import dataclasses
 import construct as cs
 import time
+from pkgutil import iter_modules
 
 
 @dataclasses.dataclass
