@@ -90,7 +90,6 @@ setup(
         "Typing :: Typed",
         "Intended Audience :: Developers",
     ],
-    keywords=("construct-gallery module"),
     author="Ircama",
     url="https://github.com/Ircama/construct-gallery",
     license='CC-BY-NC-SA-4.0',
@@ -118,6 +117,9 @@ setup(
         'construct-editor'
     ],
     keywords=[
+        "construct-gallery",
+        "construct-editor",
+        "module",
         "gui",
         "wx",
         "wxpython",
