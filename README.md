@@ -392,9 +392,8 @@ note   "...
 ```python
 import wx
 import construct as cs
-from construct_gallery import ConstructGallery, GalleryItem
+from construct_gallery import ConstructGallery, GalleryItem, BleakScannerConstruct
 from collections import OrderedDict
-from construct_gallery import BleakScannerConstruct
 from bleak import BleakScanner
 
 bc = BleakScannerConstruct(
@@ -451,8 +450,7 @@ Complete BLE logger program.
 import wx
 import logging
 import construct as cs
-from construct_gallery import GalleryItem
-from bleak_scanner_construct import BleakScannerConstruct
+from construct_gallery import ConstructGallery, GalleryItem, BleakScannerConstruct
 
 adv_format = cs.Struct(
     "type" / cs.Int8ub,
