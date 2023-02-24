@@ -95,6 +95,7 @@ Prerequisite:
 
 ```shell
 pip3 install build
+pip3 install twine
 ```
 
 Command:

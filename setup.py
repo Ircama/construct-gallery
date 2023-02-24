@@ -93,15 +93,7 @@ setup(
     author="Ircama",
     url="https://github.com/Ircama/construct-gallery",
     license='CC-BY-NC-SA-4.0',
-    packages=[
-        "construct_gallery",
-        "bleak_scanner_construct",
-        "pyshell_plugin",
-        "wx_logging_plugin",
-        "decimal_convert_plugin",
-        "string_convert_plugin",
-        "allow_python_expr_plugin",
-    ],
+    packages=["construct_gallery"],
     package_data={
         "construct_gallery": ["py.typed"],
     },
