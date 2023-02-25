@@ -935,6 +935,10 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     return
                 self.load_data_dict(gallery_history, i.name)
 
+    def on_application_close(self):
+        if hasattr(self, 'pyshell') and self.pyshell:
+            self.pyshell.Destroy()
+
     def on_uncaught_exception(self,
             etype: t.Type[BaseException],
             value: BaseException,

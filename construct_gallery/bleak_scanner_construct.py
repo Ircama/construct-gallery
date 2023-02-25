@@ -212,13 +212,3 @@ class BleakScannerConstruct(ConstructGallery):
         logging.info(
             "Advertising: device=%s, advertisement_data=%s",
             device, advertisement_data)
-
-
-if __name__ == "__main__":
-    app = wx.App(False)
-    frame = wx.Frame(
-        None, title="BleakScannerConstructFrame", size=(1000, 600))
-    frame.CreateStatusBar()
-    BleakScannerConstruct(frame)
-    frame.Show(True)
-    app.MainLoop()

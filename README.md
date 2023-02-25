@@ -504,8 +504,8 @@ from construct_gallery import allow_python_expr_plugin
 from construct_gallery import decimal_convert_plugin
 from construct_gallery import string_convert_plugin
 
-from construct_gallery import pyshell_plugin
-from construct_gallery import wx_logging_plugin
+from construct_gallery.pyshell_plugin import PyShellPlugin
+from construct_gallery.wx_logging_plugin import WxLogging
 ```
 
 The following example shows how to add the first three plugins to *HexEditorGrid*. It is based on the [Getting started (as Widgets)](https://github.com/timrid/construct-editor#getting-started-as-widgets) of the *construct-editor* module:
@@ -548,7 +548,70 @@ frame.Show(True)
 app.MainLoop()
 ```
 
-The following example shows all plugins:
+The following example shows all plugins, including a way to close the *PyShellPlugin* when the application terminates:
 
 ```python
+import wx
+import construct as cs
+from construct_editor.wx_widgets import WxConstructHexEditor
+import construct_editor.wx_widgets.wx_hex_editor
+import logging
+
+from construct_gallery import decimal_convert_plugin
+from construct_gallery import string_convert_plugin
+from construct_gallery import allow_python_expr_plugin
+
+from construct_gallery.pyshell_plugin import PyShellPlugin
+from construct_gallery.wx_logging_plugin import WxLogging
+
+
+class HexEditorGrid(  # add plugins to HexEditorGrid
+        string_convert_plugin.HexEditorGrid,
+        decimal_convert_plugin.HexEditorGrid,
+        allow_python_expr_plugin.HexEditorGrid,
+        construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid):
+    def build_context_menu(self):
+        menus = super().build_context_menu()
+        menus.insert(-3, None)  # add an horizontal line before the two plugins
+        return menus
+
+
+class ConstHexEditorPanel(wx.Panel, PyShellPlugin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        sizer = wx.BoxSizer(wx.HORIZONTAL)  # it includes 3 vert. sizers
+
+        vsizer = wx.BoxSizer(wx.VERTICAL)  # left side sizer
+        self.py_shell(vsizer)  # Start PyShell plugin
+        sizer.Add(vsizer, 0, wx.ALL | wx.EXPAND, 2)
+
+        # monkey-patch HexEditorGrid
+        construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid = HexEditorGrid
+
+        constr = cs.Struct(
+            "a" / cs.Int16sb,
+            "b" / cs.Int16sb,
+        )
+        b = bytes([0x12, 0x34, 0x56, 0x78])
+        
+        construct_hex_editor = WxConstructHexEditor(self, construct=constr, binary=b)
+        sizer.Add(construct_hex_editor, 1, wx.ALL | wx.EXPAND, 2)
+        self.SetSizer(sizer)
+        self.wx_log_window = WxLogging(self, logging.getLogger())
+        logging.warning("Hello World")
+
+
+    def on_close(self, event):
+        if hasattr(self, 'pyshell') and self.pyshell:
+            self.pyshell.Destroy()
+        event.Skip()
+
+
+app = wx.App(False)
+frame = wx.Frame(None, title="Construct Hex Editor", size=(1000, 200))
+main_panel = ConstHexEditorPanel(frame)
+frame.Bind(wx.EVT_CLOSE, main_panel.on_close)
+frame.Show(True)
+app.MainLoop()
 ```
