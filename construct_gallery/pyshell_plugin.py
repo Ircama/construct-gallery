@@ -4,7 +4,7 @@ from wx.py.shell import ShellFrame
 
 
 class PyShellPlugin():
-    def py_shell(self):
+    def py_shell(self, vsizer):
         self.pyshell = None
         self.pyshell_help = None
 
@@ -17,7 +17,7 @@ class PyShellPlugin():
             wx.DefaultSize,
             0,
         )
-        self.vsizer.Add(self.open_shell_btn, 0, wx.ALL | wx.EXPAND, 1)
+        vsizer.Add(self.open_shell_btn, 0, wx.ALL | wx.EXPAND, 1)
         self.open_shell_btn.Bind(wx.EVT_BUTTON, self.on_open_shell_clicked)
 
     def on_pyshell_help(self, event):

@@ -484,3 +484,71 @@ BleConstruct(
 frame.Show(True)
 app.MainLoop()
 ```
+
+## Plugins
+
+- plugins offering additional options for the context menu of the *construct-editor* HexEditorGrid (invoked with the right click of the mouse):
+  - `allow_python_expr_plugin.py`
+  - `decimal_convert_plugin.py`
+  - `string_convert_plugin.py`
+
+- PyShell plugin `pyshell_plugin.py`, adding a button to activate a PyShell frame (PyShell is a GUI-based python shell).
+
+- `wx_logging_plugin.py`, providing a debug GUI panel in background.
+- `pyshell_plugin.py`, activating a Python shell button that allows opening an inspector shell, which also includes a special *Help* with related submenu (that can be invoked also via F9). 
+
+Import statements:
+
+```python
+from construct_gallery import allow_python_expr_plugin
+from construct_gallery import decimal_convert_plugin
+from construct_gallery import string_convert_plugin
+
+from construct_gallery import pyshell_plugin
+from construct_gallery import wx_logging_plugin
+```
+
+The following example shows how to add the first three plugins to *HexEditorGrid*. It is based on the [Getting started (as Widgets)](https://github.com/timrid/construct-editor#getting-started-as-widgets) of the *construct-editor* module:
+
+```python
+import wx
+import construct as cs
+from construct_editor.wx_widgets import WxConstructHexEditor
+import construct_editor.wx_widgets.wx_hex_editor
+
+from construct_gallery import decimal_convert_plugin
+from construct_gallery import string_convert_plugin
+from construct_gallery import allow_python_expr_plugin
+
+
+class HexEditorGrid(  # add plugins to HexEditorGrid
+        string_convert_plugin.HexEditorGrid,
+        decimal_convert_plugin.HexEditorGrid,
+        allow_python_expr_plugin.HexEditorGrid,
+        construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid):
+    def build_context_menu(self):
+        menus = super().build_context_menu()
+        menus.insert(-3, None)  # add an horizontal line before the two plugins
+        return menus
+
+
+constr = cs.Struct(
+    "a" / cs.Int16sb,
+    "b" / cs.Int16sb,
+)
+b = bytes([0x12, 0x34, 0x56, 0x78])
+
+# monkey-patch HexEditorGrid
+construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid = HexEditorGrid
+
+app = wx.App(False)
+frame = wx.Frame(None, title="Construct Hex Editor", size=(1000, 200))
+editor_panel = WxConstructHexEditor(frame, construct=constr, binary=b)
+frame.Show(True)
+app.MainLoop()
+```
+
+The following example shows all plugins:
+
+```python
+```
