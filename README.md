@@ -615,3 +615,31 @@ frame.Bind(wx.EVT_CLOSE, main_panel.on_close)
 frame.Show(True)
 app.MainLoop()
 ```
+
+## Installing wxPython with Python 3.11 on Windows
+
+At the moment of writing, the [Python wheel packaging](https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/#wheels) of wxPython for Python 3.11 is not yet available in [Pypi](https://pypi.org/). Follow this procedure to perform manual installation on Windows.
+
+As a prerequisite, if not already installed, you might need to install the
+[Visual C++ Redistributable for Visual Studio 2015](https://www.microsoft.com/en-us/download/details.aspx?id=48145). Example:
+
+```cmd
+curl "https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe" --output vc_redist.x64.exe
+```
+
+Then run `vc_redist.x64.exe` and follow the installation steps.
+
+Download the right WHL of wxPython from the related [Windows artifacts](https://dev.azure.com/oleksis/wxPython/_build/results?buildId=132&view=artifacts&pathAsName=false&type=publishedArtifacts):
+
+Example:
+
+```cmd
+curl https://artprodcca1.artifacts.visualstudio.com/A09e3854d-7789-4d94-8809-7e11120c1549/40d5fac0-3bcd-4754-be87-d3ce7214bec4/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL29sZWtzaXMvcHJvamVjdElkLzQwZDVmYWMwLTNiY2QtNDc1NC1iZTg3LWQzY2U3MjE0YmVjNC9idWlsZElkLzEzMi9hcnRpZmFjdE5hbWUvd3hQeXRob24tcHkzLjExLXdpbl94NjQ1/content?format=zip --output wxPython-py3.11-win_x64.zip
+powershell -command "Expand-Archive -LiteralPath wxPython-py3.11-win_x64.zip -DestinationPath wxPython-py3.11-win_x64"
+```
+
+Install wxPython WHL with the same syntax of installing a standard package:
+
+```cmd
+pip install wxPython-py3.11-win_x64\wxPython-py3.11-win_x64\wxPython-4.2.1a1-cp311-cp311-win_amd64.whl
+```
