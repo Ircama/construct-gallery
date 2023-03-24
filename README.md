@@ -75,6 +75,15 @@ sudo apt-get install -y libgtk-3-dev
 python3 -m pip install attrdict
 ```
 
+With Python 3.11 replace *attrdict* with *attrdict3*:
+
+```
+python3 -m pip uninstall attrdict
+python3 -m pip install attrdict3
+```
+
+The C compiler is needed too.
+
 Alternatively to the above mentioned installation method, the following steps allow installing the latest version from GitHub.
 
 - Optional preliminary configuration (if not already done):
