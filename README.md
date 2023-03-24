@@ -64,7 +64,16 @@ If the `bleak_scanner_construct.py` BLE module is also needed:
 python3 -m pip install bleak
 ```
 
+With Raspberry Pi, *bleak* will install *dbus-fast*, which needs to build the python *wheel* (related compilation takes some time).
+
 Prerequisite component: [construct_editor](https://github.com/timrid/construct-editor). *construct-editor* is automatically installed with the package, while *bleak* requires manual installation.
+
+Additional prerequisites for Raspberry Pi:
+
+```
+sudo apt-get install -y libgtk-3-dev
+python3 -m pip install attrdict
+```
 
 Alternatively to the above mentioned installation method, the following steps allow installing the latest version from GitHub.
 
