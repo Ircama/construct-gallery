@@ -14,6 +14,12 @@ The following Python modules are included:
   
   This module can be directly used in GUI programs, or can be further extended with `bleak_scanner_construct.py`.
 
+- `config_editor.py`, providing the `ConfigEditorPanel()` class (widget).
+
+  This widget implements an editing GUI composed by a form including multiple byte structures, each one related to its own *construct* data model.
+  
+  The structure of this form is described by the "editing_structure" parameter.
+
 - `bleak_scanner_construct.py`, providing the `BleakScannerConstruct()` class.
 
   The component implements a [Bluetooth Low Energy](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy) (BLE) GUI client to log, browse, test and edit [BLE advertisements](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy#Advertising_and_discovery).
@@ -118,6 +124,8 @@ Run `construct-gallery` from the command line. Follow the API Documentation for 
 ## API Documentation
 
 ### ConstructGallery
+
+Test it with `python3 -m construct_gallery -c`.
 
 ```python
 import wx
@@ -405,7 +413,67 @@ note   "...
         ..."
 ```
 
+### ConfigEditorPanel
+
+This widget implements an editing GUI composed by a form including multiple structures, each one related to its own *construct* data model. All is described by the "editing_structure" dictionary.
+
+The object returned by "ConfigEditorPanel" can be used to read the edited structure via the included "editor_panel" array, like with the following:
+
+```python
+...
+config_editor_panel = ConfigEditorPanel(...)
+...
+app.MainLoop()
+
+for char in config_editor_panel.editor_panel:
+    print("Edited value:", config_editor_panel.editor_panel[char].binary)
+```
+
+Test it with `python3 -m construct_gallery -c`.
+
+The example below also describes the data model of the "editing_structure" structure.
+
+```python
+import wx
+from construct_gallery import ConfigEditorPanel
+from construct_editor.core.model import IntegerFormat
+import construct as cs
+
+editing_structure = {
+    0: {  # This must be numeric; multiple numbers can be included. The word "Characteristic 0" is written to the left side, as the first line.
+        "name": "A string",  # The bold name "A string" is written to the left side, as the second line.
+        "binary": b"My string",  # the "bytes" window is hidden by the fault ancd can be espanded through the GUI
+        "construct": cs.Struct(
+            "My string" / cs.GreedyString("utf8"),
+        ),
+        "read_only": True,  # (boolean) False or True. If True, "(read only)" is written to the left side, as the third line.
+        "size": 130,  # Number of verical pixels to show (if smallet than the minimum requested size, a scroll bar appears).
+        "IntegerFormat": IntegerFormat.Hex,  # Default format for integers: IntegerFormat.Hex or IntegerFormat.Dec
+    },
+}
+
+app = wx.App(False)
+frame = wx.Frame(
+    None, title="ConfigEditorPanelFrame demo", size=(1000, 300))
+frame.CreateStatusBar()
+main_panel = ConfigEditorPanel(frame,
+    editing_structure=editing_structure,
+    name_size=180,
+    type_size=160,
+    value_size=200)
+frame.Show(True)
+print(get_report())
+app.MainLoop()
+for char in main_panel.editor_panel:
+    editing_structure[char][
+        "new_binary"] = main_panel.editor_panel[char].binary
+for i in editing_structure:
+    print(i, editing_structure[i])
+```
+
 ### BleakScannerConstruct
+
+Test it with `python3 -m construct_gallery -b`.
 
 ```python
 import wx
@@ -661,3 +729,9 @@ Install wxPython WHL with the same syntax of installing a standard package:
 ```cmd
 pip install wxPython-py3.11-win_x64\wxPython-py3.11-win_x64\wxPython-4.2.1a1-cp311-cp311-win_amd64.whl
 ```
+
+# Preview
+
+Preview of a sample usage of *construct_gallery* with all plugins:
+
+![Preview of a sample usage of construct_gallery with plugins](https://github.com/pvvx/ATC_MiThermometer/raw/master/python-interface/images/ble_browser.gif)
