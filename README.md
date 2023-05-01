@@ -360,17 +360,25 @@ app.MainLoop()
 ```mermaid
 classDiagram
     BleakScannerConstruct --|> ConstructGallery
-    ConstructGallery --> WxConstructHexEditor
+    ConstructGallery *-- WxConstructHexEditor
+    WxConstructHexEditor --* ConfigEditorPanel
+    scrolledScrolledPanel <|-- ConfigEditorPanel
+
+    class ConfigEditorPanel{
+        editor_panel
+    }
 
     class BleakScannerConstruct{
         filter_hint_mac
         filter_hint_name
-
         reference_label="MAC address"
         load_menu_label="Log Data and Configuration"
         clear_label="Log Data"
         added_data_label="Logging data"
         logging_plugin=True
+
+        bleak_advertising(device, advertisement_data)
+        on_application_close()
     }
 
     class ConstructGallery{
@@ -392,6 +400,8 @@ classDiagram
         col_value_width=None
         run_shell_plugin=True
         run_hex_editor_plugins=True
+
+        add_data(data, reference, append_label)
     }
 ```
 
