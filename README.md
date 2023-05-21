@@ -355,18 +355,12 @@ frame.Show(True)
 app.MainLoop()
 ```
 
-### construct-gallery module
+### construct-gallery package
 
 ```mermaid
 classDiagram
     BleakScannerConstruct --|> ConstructGallery
-    ConstructGallery *-- WxConstructHexEditor
-    WxConstructHexEditor --* ConfigEditorPanel
-    scrolledScrolledPanel <|-- ConfigEditorPanel
-
-    class ConfigEditorPanel{
-        editor_panel
-    }
+    ConstructGallery "1" *-- "1" WxConstructHexEditor
 
     class BleakScannerConstruct{
         filter_hint_mac
@@ -405,7 +399,7 @@ classDiagram
     }
 ```
 
-### construct-editor module
+### construct-editor package
 
 ```mermaid
 classDiagram
@@ -479,6 +473,16 @@ for char in main_panel.editor_panel:
         "new_binary"] = main_panel.editor_panel[char].binary
 for i in editing_structure:
     print(i, editing_structure[i])
+```
+
+```mermaid
+classDiagram
+    WxConstructHexEditor "*" --* "1" ConfigEditorPanel
+    scrolledScrolledPanel "1" <|-- "1" ConfigEditorPanel
+
+    class ConfigEditorPanel{
+        editor_panel
+    }
 ```
 
 ### BleakScannerConstruct
@@ -745,3 +749,7 @@ pip install wxPython-py3.11-win_x64\wxPython-py3.11-win_x64\wxPython-4.2.1a1-cp3
 Preview of a sample usage of *construct_gallery* with all plugins:
 
 ![Preview of a sample usage of construct_gallery with plugins](https://github.com/pvvx/ATC_MiThermometer/raw/master/python-interface/images/ble_browser.gif)
+
+Preview of a sample usage of *ConfigEditorPanel*:
+
+![Preview of a sample usage of ConfigEditorPanel](https://github.com/pvvx/ATC_MiThermometer/raw/master/python-interface/images/atc_mi_config.gif)
