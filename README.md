@@ -1,5 +1,9 @@
 # construct-gallery
 
+[![PyPI](https://img.shields.io/pypi/v/construct-gallery.svg?maxAge=2592000)](https://pypi.org/project/construct-gallery)
+[![Python Versions](https://img.shields.io/pypi/pyversions/construct-gallery.svg)](https://pypi.org/project/construct-gallery/)
+[![GitHub license](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-blue)](https://raw.githubusercontent.com/ircama/construct-gallery/master/LICENSE)
+
 __wxPython Widgets extending functionalities of *construct-editor*__
 
 The following Python modules are included:
