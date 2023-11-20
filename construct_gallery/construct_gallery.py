@@ -1381,11 +1381,11 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     self.gallery_selector_lbx.GetStringSelection()
                 )
             )
-        except ValueError as e:
+        except (KeyError, ValueError) as e:
             dlg = wx.MessageDialog(
                 None,
                 str(e),
-                "Cannot build bytes after changing parameters",
+                "Cannot build bytes after changing parameters. Try again.",
                 wx.OK | wx.ICON_WARNING
             )
             dlg.ShowModal()
