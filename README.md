@@ -375,6 +375,7 @@ classDiagram
         clear_label="Log Data"
         added_data_label="Logging data"
         logging_plugin=True
+        bleak_scanner_kwargs={}
 
         bleak_advertising(device, advertisement_data)
         on_application_close()
@@ -513,6 +514,8 @@ bc = BleakScannerConstruct(
         (same argumnents as ConstructGallery)
 )
 ```
+
+Optionally, `bleak_scanner_kwargs` allows defining a dictionary of arguments passed to *BleakScanner* in the form: `BleakScanner(detection_callback, **bleak_scanner_kwargs)`.
 
 The intended way to use this class is to create a subclass that overrides the *bleak_advertising()* method (which does nothing in the partent class). The overridden method shall detect valid advertisements and call `self.add_data()` to log data to the gallery samples of *construct-gallery*. *logging* can be used to log debugging information to *wx_logging_plugin*.
 

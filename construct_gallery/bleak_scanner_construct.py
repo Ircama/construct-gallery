@@ -92,6 +92,7 @@ class BleakScannerConstruct(ConstructGallery):
             clear_label="Log Data",
             added_data_label="Logging data",
             logging_plugin=True,
+            bleak_scanner_kwargs={},
             **kwargs):
         super().__init__(
             *args,
@@ -102,6 +103,7 @@ class BleakScannerConstruct(ConstructGallery):
             **kwargs)
         self.filter_hint_mac = filter_hint_mac
         self.filter_hint_name = filter_hint_name
+        self.bleak_scanner_kwargs = bleak_scanner_kwargs
 
         # Start and stop buttons
         controlSizer = wx.StaticBoxSizer(
@@ -148,11 +150,13 @@ class BleakScannerConstruct(ConstructGallery):
         if name is not None:
             self.filter_name = name
 
-    def ble_start(self):
+    def ble_start(self, bleak_scanner_kwargs=None):
+        if bleak_scanner_kwargs is None:
+            bleak_scanner_kwargs = self.bleak_scanner_kwargs
         if self.bluetooth_thread and self.bluetooth_thread.is_alive():
             return
         self.bluetooth_thread = Thread(
-            target=lambda: asyncio.run(self.bt_adv()))
+            target=lambda: asyncio.run(self.bt_adv(bleak_scanner_kwargs)))
         logging.warning("BLE thread started")
         self.bluetooth_thread.start()
         self.startButton.Enable(False)
@@ -179,7 +183,7 @@ class BleakScannerConstruct(ConstructGallery):
         if hasattr(self, 'pyshell') and self.pyshell:
             self.pyshell.Destroy()
 
-    async def bt_adv(self):
+    async def bt_adv(self, bleak_scanner_kwargs):
         self.bleak_stop_event = asyncio.Event()
         self.bleak_event_loop = asyncio.get_event_loop()
 
@@ -202,7 +206,8 @@ class BleakScannerConstruct(ConstructGallery):
             self.bleak_advertising(device, advertisement_data)
 
         async with BleakScanner(
-            detection_callback=partial(detection_callback)
+            detection_callback=partial(detection_callback),
+            **bleak_scanner_kwargs
         ) as scanner:
             await self.bleak_stop_event.wait()
         logging.warning("BLE thread stopped")
