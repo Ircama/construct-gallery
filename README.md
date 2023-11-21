@@ -375,7 +375,7 @@ classDiagram
         clear_label="Log Data"
         added_data_label="Logging data"
         logging_plugin=True
-        bleak_scanner_kwargs={}
+        bleak_scanner_kwargs
 
         bleak_advertising(device, advertisement_data)
         on_application_close()
@@ -401,7 +401,7 @@ classDiagram
         run_shell_plugin=True
         run_hex_editor_plugins=True
 
-        add_data(data, reference, append_label)
+        add_data(data, reference, label, append_label, discard_duplicates, date_separator, duplicate_separator)
     }
 ```
 

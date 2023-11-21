@@ -1732,7 +1732,9 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             reference=None,
             label=None,
             append_label=None,
-            discard_duplicates=False):
+            discard_duplicates=False,
+            date_separator=" ",
+            duplicate_separator="-"):
         if not self.construct_hex_editor.IsShown():
             self.construct_hex_editor.construct_editor.Show()
             self.construct_hex_editor.contextkw = GalleryDict.get_contextkw(
@@ -1745,12 +1747,12 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             label = utc_dt.astimezone().strftime(
                 '%y-%m-%d %H:%M:%S.%f').strip()
             if append_label:
-                label = label + " " + append_label
+                label = label + date_separator + append_label
         if GalleryDict.exists(label):
             if discard_duplicates:
                 return True
             for i in range(1000):
-                new_label = label + "-" + str(i)
+                new_label = label + duplicate_separator + str(i)
                 if not GalleryDict.exists(new_label):
                     label = new_label
                     break
