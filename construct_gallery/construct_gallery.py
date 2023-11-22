@@ -752,6 +752,9 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)  # it includes 3 vert. sizers
         self.vsizer = wx.BoxSizer(wx.VERTICAL)  # left side sizer
 
+        self.default_zoom = 22
+        self.current_zoom = self.default_zoom
+
         GalleryDict.init(
             self.reference_label, self.key_label, self.description_label)
 
@@ -815,13 +818,13 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             label="Load from file", size=wx.Size(115, -1))
         self.load_data_file_btn.Bind(wx.EVT_BUTTON,
             self.on_load_data_file_clicked)
-        controlSizer.Add(self.load_data_file_btn, 0, wx.EXPAND | wx.RIGHT, 5)
+        controlSizer.Add(self.load_data_file_btn, 1, wx.EXPAND | wx.RIGHT, 5)
 
         self.save_data_file_btn = wx.Button(self, wx.ID_ANY,
             label="Save to file", size=wx.Size(115, -1))
         self.save_data_file_btn.Bind(wx.EVT_BUTTON,
             self.on_save_data_file_clicked)
-        controlSizer.Add(self.save_data_file_btn, 0, wx.EXPAND | wx.LEFT, 5)
+        controlSizer.Add(self.save_data_file_btn, 1, wx.EXPAND | wx.LEFT, 5)
 
         self.vsizer.Add(controlSizer, 0, wx.EXPAND | wx.CENTER)
 
@@ -870,8 +873,24 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self.reload_btn.Bind(
                 wx.EVT_BUTTON, lambda event: self.load_construct_selector())
 
+        controlSizer = wx.BoxSizer(wx.HORIZONTAL)
+
         if run_shell_plugin:
-            self.py_shell(self.vsizer)  # Start PyShell plugin
+            self.py_shell(controlSizer)  # Start PyShell plugin
+
+        self.startButton = wx.Button(self, wx.ID_ANY, label="-", style=wx.BU_EXACTFIT)
+        self.startButton.Bind(wx.EVT_BUTTON, lambda event: self.zoom(-1))
+        controlSizer.Add(self.startButton, 1, wx.EXPAND | wx.RIGHT, 0)
+
+        self.filterButton = wx.Button(self, wx.ID_ANY, label="0", style=wx.BU_EXACTFIT)
+        self.filterButton.Bind(wx.EVT_BUTTON, lambda event: self.zoom(None))
+        controlSizer.Add(self.filterButton, 1, wx.EXPAND | wx.CENTER, 0)
+
+        self.stopButton = wx.Button(self, wx.ID_ANY, label="+", style=wx.BU_EXACTFIT)
+        self.stopButton.Bind(wx.EVT_BUTTON, lambda event: self.zoom(+1))
+        controlSizer.Add(self.stopButton, 1, wx.EXPAND | wx.LEFT, 0)
+
+        self.vsizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, 2)
 
         self.sizer.Add(self.vsizer, 0, wx.ALL | wx.EXPAND, 2)
 
@@ -934,6 +953,20 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     dlg.Destroy()
                     return
                 self.load_data_dict(gallery_history, i.name)
+
+    def zoom(self, n):
+        if n is None:
+            self.current_zoom = self.default_zoom
+        else:
+            self.current_zoom += n
+        if self.current_zoom < self.default_zoom - 11:
+            self.current_zoom = self.default_zoom - 11
+        if self.current_zoom > self.default_zoom + 5:
+            self.current_zoom = self.default_zoom + 5
+        self.construct_hex_editor.construct_editor._dvc.SetRowHeight(
+            self.current_zoom
+        )
+        self.construct_hex_editor.construct_editor.Refresh()
 
     def on_application_close(self):
         if hasattr(self, 'pyshell') and self.pyshell:
@@ -1483,8 +1516,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                         self.gallery_selector_lbx.GetStringSelection()))
                 self.previous_selection = self.construct_hex_editor.binary
                 self.status_message("Selected element n. " +
-                    str(index + 1) + ': "' +
-                    self.gallery_selector_lbx.GetStringSelection() + '"')
+                    str(index + 1) + u': \u275d' +
+                    self.gallery_selector_lbx.GetStringSelection() + u'\u275e')
             else:
                 obj.SetSelection(index - 1)
                 self.construct_hex_editor.contextkw = GalleryDict.get_contextkw(
@@ -1494,8 +1527,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                         self.gallery_selector_lbx.GetStringSelection()))
                 self.previous_selection = self.construct_hex_editor.binary
                 self.status_message("Selected element n. " +
-                    str(index) + ': "' +
-                    self.gallery_selector_lbx.GetStringSelection() + '"')
+                    str(index) + u': \u275d' +
+                    self.gallery_selector_lbx.GetStringSelection() + u'\u275e')
         else:
             if GalleryDict.len() == 0:
                 self.status_message("Empty list")
@@ -1724,8 +1757,10 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         if not event:
             return
         index = event.GetEventObject().GetSelection()
-        self.status_message("Selected element n. " + str(index + 1) + ': "' +
-            self.gallery_selector_lbx.GetStringSelection() + '"')
+        self.status_message(
+            "Selected element n. " + str(index + 1) + u': \u275d'
+            + self.gallery_selector_lbx.GetStringSelection() + u'\u275e'
+        )
 
     def add_data(self,
             data,

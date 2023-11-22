@@ -113,18 +113,18 @@ class BleakScannerConstruct(ConstructGallery):
 
         self.startButton = wx.Button(self, wx.ID_ANY, label="Start")
         self.startButton.Bind(wx.EVT_BUTTON, lambda event: self.ble_start())
-        controlSizer.Add(self.startButton, 0, wx.EXPAND | wx.RIGHT, 5)
+        controlSizer.Add(self.startButton, 1, wx.EXPAND | wx.RIGHT, 5)
 
         self.filterButton = wx.Button(self, wx.ID_ANY, label="Filter")
         self.filterButton.Bind(wx.EVT_BUTTON, self.on_filter)
-        controlSizer.Add(self.filterButton, 0)
+        controlSizer.Add(self.filterButton, 1, wx.EXPAND | wx.CENTER, 5)
 
         self.stopButton = wx.Button(self, wx.ID_ANY, label="Stop")
         self.stopButton.Enable(False)
         self.stopButton.Bind(wx.EVT_BUTTON, lambda event: self.ble_stop())
-        controlSizer.Add(self.stopButton, 0, wx.EXPAND | wx.LEFT, 5)
+        controlSizer.Add(self.stopButton, 1, wx.EXPAND | wx.LEFT, 5)
 
-        self.vsizer.Insert(self.control_position, controlSizer, 0, wx.CENTER)
+        self.vsizer.Insert(self.control_position, controlSizer, 0, wx.EXPAND | wx.CENTER)
         if logging_plugin:
             self.wx_log_window = WxLogging(self, logging.getLogger())
 
