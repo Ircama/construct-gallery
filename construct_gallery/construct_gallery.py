@@ -878,17 +878,26 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         if run_shell_plugin:
             self.py_shell(controlSizer)  # Start PyShell plugin
 
-        self.startButton = wx.Button(self, wx.ID_ANY, label="-", style=wx.BU_EXACTFIT)
-        self.startButton.Bind(wx.EVT_BUTTON, lambda event: self.zoom(-1))
-        controlSizer.Add(self.startButton, 1, wx.EXPAND | wx.RIGHT, 0)
+        self.zoomOut = wx.Button(
+            self, wx.ID_ANY, label="-", style=wx.BU_EXACTFIT
+        )
+        self.zoomOut.SetToolTip("Reduce the column size of the right panel")
+        self.zoomOut.Bind(wx.EVT_BUTTON, lambda event: self.zoom(-1))
+        controlSizer.Add(self.zoomOut, 1, wx.EXPAND | wx.RIGHT, 0)
 
-        self.filterButton = wx.Button(self, wx.ID_ANY, label="0", style=wx.BU_EXACTFIT)
-        self.filterButton.Bind(wx.EVT_BUTTON, lambda event: self.zoom(None))
-        controlSizer.Add(self.filterButton, 1, wx.EXPAND | wx.CENTER, 0)
+        self.zoomReset = wx.Button(
+            self, wx.ID_ANY, label="0", style=wx.BU_EXACTFIT
+        )
+        self.zoomReset.SetToolTip("Reset the column size of the right panel")
+        self.zoomReset.Bind(wx.EVT_BUTTON, lambda event: self.zoom(None))
+        controlSizer.Add(self.zoomReset, 1, wx.EXPAND | wx.CENTER, 0)
 
-        self.stopButton = wx.Button(self, wx.ID_ANY, label="+", style=wx.BU_EXACTFIT)
-        self.stopButton.Bind(wx.EVT_BUTTON, lambda event: self.zoom(+1))
-        controlSizer.Add(self.stopButton, 1, wx.EXPAND | wx.LEFT, 0)
+        self.zoomIn = wx.Button(
+            self, wx.ID_ANY, label="+", style=wx.BU_EXACTFIT
+        )
+        self.zoomIn.SetToolTip("Increase the column size of the right panel")
+        self.zoomIn.Bind(wx.EVT_BUTTON, lambda event: self.zoom(+1))
+        controlSizer.Add(self.zoomIn, 1, wx.EXPAND | wx.LEFT, 0)
 
         self.vsizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, 2)
 
@@ -954,16 +963,31 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     return
                 self.load_data_dict(gallery_history, i.name)
 
+        dvc = self.construct_hex_editor.construct_editor._dvc
+        font_c = wx.Font(wx.FontInfo(8))
+        head_txt_colr = wx.Colour('brown')
+        head_bac_colr = dvc.GetClassDefaultAttributes().colBg
+        attr = wx.ItemAttr(head_txt_colr,head_bac_colr,font_c)
+        dvc.SetHeaderAttr(attr)
+
     def zoom(self, n):
+        dvc = self.construct_hex_editor.construct_editor._dvc
+
         if n is None:
             self.current_zoom = self.default_zoom
         else:
             self.current_zoom += n
+
+        if self.current_zoom < 17:
+            dvc.SetFont(wx.Font(wx.FontInfo(7)))
+        else:
+            dvc.SetFont(dvc.GetClassDefaultAttributes().font)
+
         if self.current_zoom < self.default_zoom - 11:
             self.current_zoom = self.default_zoom - 11
         if self.current_zoom > self.default_zoom + 5:
             self.current_zoom = self.default_zoom + 5
-        self.construct_hex_editor.construct_editor._dvc.SetRowHeight(
+        dvc.SetRowHeight(
             self.current_zoom
         )
         self.construct_hex_editor.construct_editor.Refresh()
