@@ -843,6 +843,9 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self, wx.ID_ANY, "Clear " + self.clear_label,
             wx.DefaultPosition, wx.DefaultSize, 0
         )
+        self.clear_gallery_btn.SetToolTip(
+            "Clear the list shown above"
+        )
         self.vsizer.Add(self.clear_gallery_btn, 0, wx.ALL | wx.EXPAND, 1)
         self.clear_gallery_btn.Bind(
             wx.EVT_BUTTON, lambda event: self.clear_log())
@@ -851,6 +854,9 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.clear_element_data_btn = wx.Button(
             self, wx.ID_ANY, "Clear Element Data",
             wx.DefaultPosition, wx.DefaultSize, 0)
+        self.clear_element_data_btn.SetToolTip(
+            "Clear bytes in the center panel"
+        )
         self.vsizer.Add(self.clear_element_data_btn, 0, wx.ALL | wx.EXPAND, 1)
         self.clear_element_data_btn.Bind(wx.EVT_BUTTON,
             self.on_clear_element_data_clicked)
@@ -864,11 +870,12 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     self.gallery_selector_lbx.Append(sample)
 
         # "Reload construct module" button
-        if isinstance(gallery_descriptor, ModuleType):
+        if isinstance(self.gallery_descriptor, ModuleType):
             self.reload_btn = wx.Button(
                 self, wx.ID_ANY, "Reload construct module",
                 wx.DefaultPosition, wx.DefaultSize, 0
             )
+            self.reload_btn.SetToolTip(self.gallery_descriptor.__name__)
             self.vsizer.Add(self.reload_btn, 0, wx.ALL | wx.EXPAND, 1)
             self.reload_btn.Bind(
                 wx.EVT_BUTTON, lambda event: self.load_construct_selector())
@@ -878,6 +885,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         if run_shell_plugin:
             self.py_shell(controlSizer)  # Start PyShell plugin
 
+        # Add "-", "0", "+" buttons
         self.zoomOut = wx.Button(
             self, wx.ID_ANY, label="-", style=wx.BU_EXACTFIT
         )
@@ -899,6 +907,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.zoomIn.Bind(wx.EVT_BUTTON, lambda event: self.zoom(+1))
         controlSizer.Add(self.zoomIn, 1, wx.EXPAND | wx.LEFT, 0)
 
+        # Add all horizontal buttons
         self.vsizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, 2)
 
         self.sizer.Add(self.vsizer, 0, wx.ALL | wx.EXPAND, 2)
@@ -1048,17 +1057,18 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             return
         if isinstance(self.gallery_descriptor, ModuleType):
             construct_module = reload(self.gallery_descriptor)
-            self.gallery_descriptor = construct_module.gallery_descriptor
+            gallery_descr = construct_module.gallery_descriptor
+        else:
+            gallery_descr = self.gallery_descriptor
         self.construct_selector_lbx.Clear()
         self.construct_selector_lbx.InsertItems(
-            list(self.gallery_descriptor.keys()), 0)
+            list(gallery_descr.keys()), 0)
         self.gallery_selection = self.default_gallery_selection
         default_construct = list(
-            self.gallery_descriptor.keys())[self.gallery_selection]
+            gallery_descr.keys())[self.gallery_selection]
         GalleryDict.set_fixed_contextkw(
-            self.gallery_descriptor[default_construct].contextkw)
-        self.used_construct = self.gallery_descriptor[
-            default_construct].construct
+            gallery_descr[default_construct].contextkw)
+        self.used_construct = gallery_descr[default_construct].construct
         self.construct_selector_lbx.SetStringSelection(default_construct)
         if self.construct_hex_editor:
             self.construct_hex_editor.construct = self.used_construct
@@ -1561,8 +1571,19 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
     def change_gallery_selection(self):
         if not self.construct_hex_editor:
             return
-        gallery_item = self.gallery_descriptor[
-            self.construct_selector_lbx.GetStringSelection()]
+        if isinstance(self.gallery_descriptor, ModuleType):
+            try:
+                gallery_item = self.gallery_descriptor.gallery_descriptor[
+                    self.construct_selector_lbx.GetStringSelection()]
+            except Exception as e:
+                wx.LogError(
+                    "Invalid module format: %s. File: %s" % (
+                        str(e), self.gallery_descriptor.__file__)
+                )
+                return
+        else:
+            gallery_item = self.gallery_descriptor[
+                self.construct_selector_lbx.GetStringSelection()]
         GalleryDict.set_fixed_contextkw(gallery_item.contextkw)
         self.used_construct = gallery_item.construct
         self.construct_hex_editor.construct = self.used_construct
