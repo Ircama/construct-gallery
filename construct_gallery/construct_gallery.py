@@ -1454,6 +1454,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     self.gallery_selector_lbx.GetStringSelection()
                 )
             )
+            self.change_gallery_selection()
         except (KeyError, ValueError) as e:
             dlg = wx.MessageDialog(
                 None,
