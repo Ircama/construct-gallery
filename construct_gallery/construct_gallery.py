@@ -1443,6 +1443,12 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
     def rebuild_bytes_selection(self):
         selection = self.gallery_selector_lbx.GetSelection()
         try:
+            self.construct_hex_editor.construct_editor.parse(
+                self.construct_hex_editor.binary,
+                **GalleryDict.get_contextkw(
+                    self.gallery_selector_lbx.GetStringSelection()
+                )
+            )
             new_bytes = self.construct_hex_editor.construct_editor.build(
                 **GalleryDict.get_contextkw(
                     self.gallery_selector_lbx.GetStringSelection()
