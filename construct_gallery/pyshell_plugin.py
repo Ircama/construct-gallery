@@ -33,31 +33,51 @@ Use "frame" for the main frame, meaning "self.GetTopLevelParent()"
 
 For multiline instructions, wrap them into a function and then call the function.
 
+Local aliases:
+construct_editor = self.construct_hex_editor.construct_editor
+construct_hex_editor = self.construct_hex_editor
+
+Read-only properties:
+construct() = construct_editor.construct
+contextkw() = contextkw = construct_hex_editor.contextkw
+binary() = binary = construct_hex_editor.binary
+parsed_data() = parsed_data = construct_editor.root_obj
+
+Using construct:
+binary = construct().build(parsed_data(), **contextkw())
+parsed_data = construct().parse(binary(), **contextkw())
+
 _________________________________________
 
 To hide the construct_hex_editor:
-self.construct_hex_editor.Hide()
+construct_hex_editor.Hide()
 _________________________________________
 
 To show the construct_hex_editor:
-self.construct_hex_editor.Show();self.construct_hex_editor.GetParent().Layout()
+construct_hex_editor.Show();construct_hex_editor.GetParent().Layout()
 _________________________________________
 
 To parse a new string:
-frame.main_panel.construct_hex_editor.contextkw = { "key": "value", ... }
-frame.main_panel.construct_hex_editor.binary = bytes.fromhex("...")
+construct_hex_editor.contextkw = { "key": "value", ... }
+construct_hex_editor.binary = bytes.fromhex("...")
 _________________________________________
 
 To expand all fields:
-frame.main_panel.construct_hex_editor.construct_editor.expand_all()
+construct_editor.expand_all()
 _________________________________________
 
 To change the parser:
-frame.main_panel.construct_hex_editor.construct = ...construct...
+construct_hex_editor.construct = ...construct...
 _________________________________________
 
-To set the root variable to the parsed structure:
-root = frame.main_panel.construct_hex_editor.construct_editor._model.root_obj
+Root variable of the parsed structure:
+parsed_data()
+parsed_data().search_all("...")
+_________________________________________
+
+To assign a variable and update the UI:
+parsed_data().... = ...
+construct_hex_editor.binary = construct().build(parsed_data(), **contextkw())
 _________________________________________
 
 To write data to the status line:
@@ -102,7 +122,22 @@ frame.GetStatusBar().GetStatusText()
         os.makedirs(confDir, exist_ok=True)
         self.config = wx.FileConfig()
         main_locals = {
-            **globals(), **locals(), "frame": self.GetTopLevelParent()}
+            **globals(), **locals(),
+            "frame":
+                self.GetTopLevelParent(),
+            "construct":
+                lambda: self.construct_hex_editor.construct_editor.construct,
+            "contextkw":
+                lambda: self.construct_hex_editor.contextkw,
+            "binary":
+                lambda: self.construct_hex_editor.binary,
+            "parsed_data":
+                lambda: self.construct_hex_editor.construct_editor.root_obj,
+            "construct_editor":
+                self.construct_hex_editor.construct_editor,
+            "construct_hex_editor":
+                self.construct_hex_editor,
+            }
         self.pyshell = ShellFrame(
             config=self.config,
             title="Packet Log Inspector Shell",
@@ -114,7 +149,7 @@ frame.GetStatusBar().GetStatusText()
         m.Insert(
             0,
             ID_LI_HELP,
-            '&Log Inspector Help\tF9',
+            '&Packet Log Inspector Help\tF9',
             'Specific help for the Log Inspector')
         self.pyshell.Bind(wx.EVT_MENU, self.on_pyshell_help, id=ID_LI_HELP)
 
