@@ -46,15 +46,11 @@ parsed_data() = parsed_data = construct_editor.root_obj
 Using construct:
 binary = construct().build(parsed_data(), **contextkw())
 parsed_data = construct().parse(binary(), **contextkw())
-
 _________________________________________
 
-To hide the construct_hex_editor:
-construct_hex_editor.Hide()
-_________________________________________
-
-To show the construct_hex_editor:
-construct_hex_editor.Show();construct_hex_editor.GetParent().Layout()
+Printing results:
+construct().build(parsed_data(), **contextkw()).hex(' ')
+print(construct().parse(binary(), **contextkw()))
 _________________________________________
 
 To parse a new string:
@@ -78,6 +74,14 @@ _________________________________________
 To assign a variable and update the UI:
 parsed_data().... = ...
 construct_hex_editor.binary = construct().build(parsed_data(), **contextkw())
+_________________________________________
+
+To hide the construct_hex_editor:
+construct_hex_editor.Hide()
+_________________________________________
+
+To show the construct_hex_editor:
+construct_hex_editor.Show();construct_hex_editor.GetParent().Layout()
 _________________________________________
 
 To write data to the status line:
