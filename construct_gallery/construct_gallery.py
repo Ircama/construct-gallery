@@ -1419,15 +1419,18 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             return
         element = self.gallery_selector_lbx.GetStringSelection()
         _, _, _, org_key = GalleryDict.get_key(element, interactive=True)
+        _, ref = GalleryDict.get_reference(element)
+        _, _, _, descr = GalleryDict.get_description(element, interactive=True)
         if org_key is None:
             return
         confirm = ''
         if org_key:
             confirm = ' or confirm the current one'
+        description = ' of "' + descr + '"' if descr else ''
         dlg = wx.TextEntryDialog(
             self,
-            'Enter the ' + self.key_label + confirm + ':',
-            'Change the ' + self.key_label)
+            'Enter the ' + self.key_label + description + confirm + ':',
+            'Change the ' + self.key_label + ' of ' + ref)
         dlg.SetValue(org_key)
         for txt in dlg.Children:
             if isinstance(txt, wx._core.TextCtrl):
@@ -1481,6 +1484,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         if not self.description_label:
             return
         element = self.gallery_selector_lbx.GetStringSelection()
+        _, ref = GalleryDict.get_reference(element)
         _, _, _, org_description = GalleryDict.get_description(
             element, interactive=True)
         if org_description is None:
@@ -1491,7 +1495,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         dlg = wx.TextEntryDialog(
             self,
             'Enter the ' + self.description_label + confirm + ':',
-            'Change the ' + self.description_label)
+            'Change the ' + self.description_label + ' of ' + ref)
         dlg.SetValue(org_description)
         for txt in dlg.Children:
             if isinstance(txt, wx._core.TextCtrl):
