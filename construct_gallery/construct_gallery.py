@@ -987,8 +987,15 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         else:
             self.current_zoom += n
 
+        print(self.current_zoom)
+        if self.current_zoom < 14:
+            dvc.SetFont(wx.Font(wx.FontInfo(5)))
         if self.current_zoom < 17:
+            dvc.SetFont(wx.Font(wx.FontInfo(6)))
+        elif self.current_zoom < 19:
             dvc.SetFont(wx.Font(wx.FontInfo(7)))
+        elif self.current_zoom < 21:
+            dvc.SetFont(wx.Font(wx.FontInfo(8)))
         else:
             dvc.SetFont(dvc.GetClassDefaultAttributes().font)
 
@@ -996,9 +1003,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self.current_zoom = self.default_zoom - 11
         if self.current_zoom > self.default_zoom + 5:
             self.current_zoom = self.default_zoom + 5
-        dvc.SetRowHeight(
-            self.current_zoom
-        )
+        dvc.SetRowHeight(self.current_zoom)
         self.construct_hex_editor.construct_editor.Refresh()
 
     def on_application_close(self):
