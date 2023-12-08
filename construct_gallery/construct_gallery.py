@@ -987,13 +987,13 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         else:
             self.current_zoom += n
 
-        if self.current_zoom < 14:
+        if self.current_zoom < 12:
             dvc.SetFont(wx.Font(wx.FontInfo(5)))
-        if self.current_zoom < 17:
+        if self.current_zoom < 13:
             dvc.SetFont(wx.Font(wx.FontInfo(6)))
-        elif self.current_zoom < 19:
+        elif self.current_zoom < 16:
             dvc.SetFont(wx.Font(wx.FontInfo(7)))
-        elif self.current_zoom < 21:
+        elif self.current_zoom < 18:
             dvc.SetFont(wx.Font(wx.FontInfo(8)))
         else:
             dvc.SetFont(dvc.GetClassDefaultAttributes().font)
