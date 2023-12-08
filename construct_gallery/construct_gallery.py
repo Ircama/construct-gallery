@@ -987,7 +987,6 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         else:
             self.current_zoom += n
 
-        print(self.current_zoom)
         if self.current_zoom < 14:
             dvc.SetFont(wx.Font(wx.FontInfo(5)))
         if self.current_zoom < 17:
