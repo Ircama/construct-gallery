@@ -763,7 +763,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self,
             id=wx.ID_ANY,
             pos=wx.DefaultPosition,
-            size=wx.Size(170, -1),
+            size=wx.Size(300, -1),
             choices=[],
             name="construct_selector",
             style=wx.LB_HSCROLL | wx.LB_NEEDED_SB
@@ -826,7 +826,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self.on_save_data_file_clicked)
         controlSizer.Add(self.save_data_file_btn, 1, wx.EXPAND | wx.LEFT, 5)
 
-        self.vsizer.Add(controlSizer, 0, wx.EXPAND | wx.CENTER)
+        self.vsizer.Add(controlSizer, 0, wx.EXPAND | wx.CENTER, 2)
+        self.vsizer.AddSpacer(2)
 
         # "Edit ref. attributes" button
         if self.reference_label and (self.key_label or self.description_label):
@@ -834,7 +835,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                 self, wx.ID_ANY, "Edit " + self.reference_label + " attributes",
                 wx.DefaultPosition, wx.DefaultSize, 0
             )
-            self.vsizer.Add(self.ref_attr_btn, 0, wx.ALL | wx.EXPAND, 1)
+            self.vsizer.Add(self.ref_attr_btn, 0, wx.ALL | wx.EXPAND, 2)
             self.ref_attr_btn.Bind(
                 wx.EVT_BUTTON, lambda event: self.edit_ref_attr())
 
@@ -846,7 +847,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.clear_gallery_btn.SetToolTip(
             "Clear the list shown above"
         )
-        self.vsizer.Add(self.clear_gallery_btn, 0, wx.ALL | wx.EXPAND, 1)
+        self.vsizer.Add(self.clear_gallery_btn, 0, wx.ALL | wx.EXPAND, 2)
         self.clear_gallery_btn.Bind(
             wx.EVT_BUTTON, lambda event: self.clear_log())
 
@@ -857,7 +858,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.clear_element_data_btn.SetToolTip(
             "Clear bytes in the center panel"
         )
-        self.vsizer.Add(self.clear_element_data_btn, 0, wx.ALL | wx.EXPAND, 1)
+        self.vsizer.Add(self.clear_element_data_btn, 0, wx.ALL | wx.EXPAND, 2)
         self.clear_element_data_btn.Bind(wx.EVT_BUTTON,
             self.on_clear_element_data_clicked)
 
@@ -876,7 +877,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                 wx.DefaultPosition, wx.DefaultSize, 0
             )
             self.reload_btn.SetToolTip(self.gallery_descriptor.__name__)
-            self.vsizer.Add(self.reload_btn, 0, wx.ALL | wx.EXPAND, 1)
+            self.vsizer.Add(self.reload_btn, 0, wx.ALL | wx.EXPAND, 2)
             self.reload_btn.Bind(
                 wx.EVT_BUTTON, lambda event: self.load_construct_selector())
 
@@ -884,6 +885,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
 
         if run_shell_plugin:
             self.py_shell(controlSizer)  # Start PyShell plugin
+        controlSizer.AddSpacer(4)
 
         # Add "-", "0", "+" buttons
         self.zoomOut = wx.Button(
@@ -891,21 +893,21 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         )
         self.zoomOut.SetToolTip("Reduce the column size of the right panel")
         self.zoomOut.Bind(wx.EVT_BUTTON, lambda event: self.zoom(-1))
-        controlSizer.Add(self.zoomOut, 1, wx.EXPAND | wx.RIGHT, 0)
+        controlSizer.Add(self.zoomOut, 1, wx.EXPAND | wx.RIGHT, 2)
 
         self.zoomReset = wx.Button(
             self, wx.ID_ANY, label="0", style=wx.BU_EXACTFIT
         )
         self.zoomReset.SetToolTip("Reset the column size of the right panel")
         self.zoomReset.Bind(wx.EVT_BUTTON, lambda event: self.zoom(None))
-        controlSizer.Add(self.zoomReset, 1, wx.EXPAND | wx.CENTER, 0)
+        controlSizer.Add(self.zoomReset, 1, wx.EXPAND | wx.CENTER, 2)
 
         self.zoomIn = wx.Button(
             self, wx.ID_ANY, label="+", style=wx.BU_EXACTFIT
         )
         self.zoomIn.SetToolTip("Increase the column size of the right panel")
         self.zoomIn.Bind(wx.EVT_BUTTON, lambda event: self.zoom(+1))
-        controlSizer.Add(self.zoomIn, 1, wx.EXPAND | wx.LEFT, 0)
+        controlSizer.Add(self.zoomIn, 1, wx.EXPAND | wx.LEFT, 2)
 
         # Add all horizontal buttons
         self.vsizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, 2)

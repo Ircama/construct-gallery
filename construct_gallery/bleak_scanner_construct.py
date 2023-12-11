@@ -4,16 +4,16 @@
 # bleak_scanner_construct module
 #############################################################################
 
-from bleak import BleakScanner  # pip3 install bleak
-import wx
-from .wx_logging_plugin import WxLogging
 import logging
-from construct_gallery import ConstructGallery
 import re
-
 import asyncio
 from functools import partial
 from threading import Thread
+import wx
+from .wx_logging_plugin import WxLogging
+from bleak import BleakScanner  # pip3 install bleak
+from construct_gallery import ConstructGallery
+import bleak
 
 
 class FilterEntryDialog(wx.Dialog):
@@ -205,11 +205,36 @@ class BleakScannerConstruct(ConstructGallery):
                 return
             self.bleak_advertising(device, advertisement_data)
 
-        async with BleakScanner(
-            detection_callback=partial(detection_callback),
-            **bleak_scanner_kwargs
-        ) as scanner:
-            await self.bleak_stop_event.wait()
+        if (
+            bleak_scanner_kwargs.get('scanning_mode') == 'passive'
+            and "BleakScannerBlueZDBus" in str(
+                bleak.get_platform_scanner_backend_type()
+            )
+        ):
+            from bleak.assigned_numbers import AdvertisementDataType
+            from bleak.backends.bluezdbus.advertisement_monitor import OrPattern
+            from bleak.backends.bluezdbus.scanner import (
+                BlueZScannerArgs, BlueZDiscoveryFilters
+            )
+            ble_z_args = {
+                'bluez': BlueZScannerArgs(
+                    or_patterns=[
+                        OrPattern(0, AdvertisementDataType.FLAGS, b"\x06"),
+                        OrPattern(0, AdvertisementDataType.FLAGS, b"\x1a"),
+                    ]
+                )
+            }
+            bleak_scanner_kwargs = {**bleak_scanner_kwargs, **ble_z_args}
+        try:
+            async with BleakScanner(
+                detection_callback=partial(detection_callback),
+                **bleak_scanner_kwargs
+            ) as scanner:
+                await self.bleak_stop_event.wait()
+        except FileNotFoundError:
+            logging.critical("Critical error: Bluetooth not available.")
+            self.stopButton.Enable(False)
+            self.startButton.Enable(True)
         logging.warning("BLE thread stopped")
 
     # This method must be overridden

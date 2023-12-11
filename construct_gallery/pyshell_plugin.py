@@ -13,11 +13,8 @@ class PyShellPlugin():
             self,
             wx.ID_ANY,
             "Open Python Shell",
-            wx.DefaultPosition,
-            wx.DefaultSize,
-            0,
         )
-        vsizer.Add(self.open_shell_btn, 0, wx.ALL | wx.EXPAND, 1)
+        vsizer.Add(self.open_shell_btn, 0, wx.ALL | wx.EXPAND)
         self.open_shell_btn.Bind(wx.EVT_BUTTON, self.on_open_shell_clicked)
 
     def on_pyshell_help(self, event):
