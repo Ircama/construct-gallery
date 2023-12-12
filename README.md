@@ -39,11 +39,8 @@ The following Python modules are included:
   - `allow_python_expr_plugin.py`
   - `decimal_convert_plugin.py`
   - `string_convert_plugin.py`
-
-- PyShell plugin `pyshell_plugin.py`, adding a button to activate a PyShell frame (PyShell is a GUI-based python shell).
-
 - `wx_logging_plugin.py`, providing a debug GUI panel in background.
-- `pyshell_plugin.py`, activating a Python shell button that allows opening an inspector shell, which also includes a special *Help* with related submenu (that can be invoked also via F9). 
+- `pyshell_plugin.py`, activating a Python shell button that allows opening a PyShell frame (PyShell is a GUI-based python shell), which also includes a special *Help* with related submenu (that can be invoked also via F9). 
 
 ## Main functionalities
 
