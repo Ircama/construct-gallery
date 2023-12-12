@@ -741,6 +741,10 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.col_name_width = col_name_width
         self.col_type_width = col_type_width
         self.col_value_width = col_value_width
+        
+        c_sep = 2
+        if 'wxMSW' in wx.PlatformInfo:
+            c_sep = 1
 
         self.skip_add_selection = False
         self.dlg_as = None
@@ -826,7 +830,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self.on_save_data_file_clicked)
         controlSizer.Add(self.save_data_file_btn, 1, wx.EXPAND | wx.LEFT, 5)
 
-        self.vsizer.Add(controlSizer, 0, wx.EXPAND | wx.CENTER, 2)
+        self.vsizer.Add(controlSizer, 0, wx.EXPAND | wx.CENTER, c_sep)
         self.vsizer.AddSpacer(2)
 
         # "Edit ref. attributes" button
@@ -835,7 +839,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                 self, wx.ID_ANY, "Edit " + self.reference_label + " attributes",
                 wx.DefaultPosition, wx.DefaultSize, 0
             )
-            self.vsizer.Add(self.ref_attr_btn, 0, wx.ALL | wx.EXPAND, 2)
+            self.vsizer.Add(self.ref_attr_btn, 0, wx.ALL | wx.EXPAND, c_sep)
             self.ref_attr_btn.Bind(
                 wx.EVT_BUTTON, lambda event: self.edit_ref_attr())
 
@@ -847,7 +851,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.clear_gallery_btn.SetToolTip(
             "Clear the list shown above"
         )
-        self.vsizer.Add(self.clear_gallery_btn, 0, wx.ALL | wx.EXPAND, 2)
+        self.vsizer.Add(self.clear_gallery_btn, 0, wx.ALL | wx.EXPAND, c_sep)
         self.clear_gallery_btn.Bind(
             wx.EVT_BUTTON, lambda event: self.clear_log())
 
@@ -858,7 +862,9 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.clear_element_data_btn.SetToolTip(
             "Clear bytes in the center panel"
         )
-        self.vsizer.Add(self.clear_element_data_btn, 0, wx.ALL | wx.EXPAND, 2)
+        self.vsizer.Add(
+            self.clear_element_data_btn, 0, wx.ALL | wx.EXPAND, c_sep
+        )
         self.clear_element_data_btn.Bind(wx.EVT_BUTTON,
             self.on_clear_element_data_clicked)
 
@@ -877,7 +883,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                 wx.DefaultPosition, wx.DefaultSize, 0
             )
             self.reload_btn.SetToolTip(self.gallery_descriptor.__name__)
-            self.vsizer.Add(self.reload_btn, 0, wx.ALL | wx.EXPAND, 2)
+            self.vsizer.Add(self.reload_btn, 0, wx.ALL | wx.EXPAND, c_sep)
             self.reload_btn.Bind(
                 wx.EVT_BUTTON, lambda event: self.load_construct_selector())
 
@@ -893,26 +899,26 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         )
         self.zoomOut.SetToolTip("Reduce the column size of the right panel")
         self.zoomOut.Bind(wx.EVT_BUTTON, lambda event: self.zoom(-1))
-        controlSizer.Add(self.zoomOut, 1, wx.EXPAND | wx.RIGHT, 2)
+        controlSizer.Add(self.zoomOut, 1, wx.EXPAND | wx.RIGHT, c_sep)
 
         self.zoomReset = wx.Button(
             self, wx.ID_ANY, label="0", style=wx.BU_EXACTFIT
         )
         self.zoomReset.SetToolTip("Reset the column size of the right panel")
         self.zoomReset.Bind(wx.EVT_BUTTON, lambda event: self.zoom(None))
-        controlSizer.Add(self.zoomReset, 1, wx.EXPAND | wx.CENTER, 2)
+        controlSizer.Add(self.zoomReset, 1, wx.EXPAND | wx.CENTER, c_sep)
 
         self.zoomIn = wx.Button(
             self, wx.ID_ANY, label="+", style=wx.BU_EXACTFIT
         )
         self.zoomIn.SetToolTip("Increase the column size of the right panel")
         self.zoomIn.Bind(wx.EVT_BUTTON, lambda event: self.zoom(+1))
-        controlSizer.Add(self.zoomIn, 1, wx.EXPAND | wx.LEFT, 2)
+        controlSizer.Add(self.zoomIn, 1, wx.EXPAND | wx.LEFT, c_sep)
 
         # Add all horizontal buttons
-        self.vsizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, 2)
+        self.vsizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, c_sep)
 
-        self.sizer.Add(self.vsizer, 0, wx.ALL | wx.EXPAND, 2)
+        self.sizer.Add(self.vsizer, 0, wx.ALL | wx.EXPAND, c_sep)
 
         # Vertical line
         self.sizer.Add(
@@ -938,7 +944,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             contextkw={},
         )
         self.construct_hex_editor.construct_editor.expand_all()
-        self.sizer.Add(self.construct_hex_editor, 1, wx.ALL | wx.EXPAND, 2)
+        self.sizer.Add(self.construct_hex_editor, 1, wx.ALL | wx.EXPAND, c_sep)
 
         self.SetSizer(self.sizer)
 
