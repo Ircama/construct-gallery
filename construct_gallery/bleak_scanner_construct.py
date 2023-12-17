@@ -11,7 +11,7 @@ from functools import partial
 from threading import Thread
 import wx
 from .wx_logging_plugin import WxLogging
-from bleak import BleakScanner  # pip3 install bleak
+from bleak import BleakScanner, BleakError  # pip3 install bleak
 from construct_gallery import ConstructGallery
 import bleak
 
@@ -157,7 +157,7 @@ class BleakScannerConstruct(ConstructGallery):
             return
         self.bluetooth_thread = Thread(
             target=lambda: asyncio.run(self.bt_adv(bleak_scanner_kwargs)))
-        logging.warning("BLE thread started")
+        logging.warning("BLE thread started.")
         self.bluetooth_thread.start()
         self.startButton.Enable(False)
         self.stopButton.Enable(True)
@@ -231,11 +231,15 @@ class BleakScannerConstruct(ConstructGallery):
                 **bleak_scanner_kwargs
             ) as scanner:
                 await self.bleak_stop_event.wait()
-        except FileNotFoundError:
-            logging.critical("Critical error: Bluetooth not available.")
+        except (FileNotFoundError, BleakError) as e:
+            logging.critical("Critical error: Bluetooth not available. %s", e)
             self.stopButton.Enable(False)
             self.startButton.Enable(True)
-        logging.warning("BLE thread stopped")
+            self.status_message(f"BLE started.")
+            self.status_message(
+                "Critical error: Bluetooth not available. " + str(e)
+            )
+        logging.warning("BLE thread stopped.")
 
     # This method must be overridden
     def bleak_advertising(self, device, advertisement_data):
