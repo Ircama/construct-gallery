@@ -9,6 +9,7 @@ import re
 import asyncio
 from functools import partial
 from threading import Thread
+import subprocess
 import wx
 from .wx_logging_plugin import WxLogging
 from bleak import BleakScanner, BleakError  # pip3 install bleak
