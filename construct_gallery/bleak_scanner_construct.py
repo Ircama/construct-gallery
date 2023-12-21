@@ -170,6 +170,7 @@ class BleakScannerConstruct(ConstructGallery):
         self.stopButton.Enable(True)
         self.wx_log_window.log_window.Show()
         wx.CallLater(500, self.status_message, f"BLE started.")
+        wx.CallLater(1000, self.GetTopLevelParent().Raise)
 
     def ble_stop(self):
         if (not self.bluetooth_thread or
@@ -213,7 +214,7 @@ class BleakScannerConstruct(ConstructGallery):
             self.bleak_advertising(device, advertisement_data)
 
         if (
-            bleak_scanner_kwargs.get('scanning_mode') == 'passive'
+            bleak_scanner_kwargs.get('scanning_mode').lower() == 'passive'
             and "BleakScannerBlueZDBus" in str(
                 bleak.get_platform_scanner_backend_type()
             )
@@ -232,6 +233,12 @@ class BleakScannerConstruct(ConstructGallery):
                 )
             }
             bleak_scanner_kwargs = {**bleak_scanner_kwargs, **ble_z_args}
+            subprocess.run(
+                "which hcitool && sudo -n hcitool cmd 0x08 0x000C 0x00 0x00"
+                " && sudo -n hcitool cmd 0x08 0x000C 0x01 0x00",
+                shell=True,
+                capture_output=True
+            )
         try:
             async with BleakScanner(
                 detection_callback=partial(detection_callback),
