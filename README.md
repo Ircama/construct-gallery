@@ -372,10 +372,12 @@ classDiagram
         clear_label="Log Data"
         added_data_label="Logging data"
         logging_plugin=True
+        auto_ble_start=False
         bleak_scanner_kwargs
 
         bleak_advertising(device, advertisement_data)
         on_application_close()
+        add_packet_frame(data, reference, label, append_label, discard_duplicates, date_separator, duplicate_separator)
     }
 
     class ConstructGallery{
@@ -514,7 +516,7 @@ bc = BleakScannerConstruct(
 
 Optionally, `bleak_scanner_kwargs` allows defining a dictionary of arguments passed to *BleakScanner* in the form: `BleakScanner(detection_callback, **bleak_scanner_kwargs)`.
 
-The intended way to use this class is to create a subclass that overrides the *bleak_advertising()* method (which does nothing in the partent class). The overridden method shall detect valid advertisements and call `self.add_data()` to log data to the gallery samples of *construct-gallery*. *logging* can be used to log debugging information to *wx_logging_plugin*.
+The intended way to use this class is to create a subclass that overrides the *bleak_advertising()* method (which does nothing in the partent class). The overridden method shall detect valid advertisements and call `self.add_packet_frame()` to log data to the gallery samples of *construct-gallery*. *logging* can be used to log debugging information to *wx_logging_plugin*.
 
 Example:
 
@@ -530,7 +532,7 @@ class MyScanner(BleakScannerConstruct):
                 device.address, format_label, advertisement_data, device.rssi)
             return
         if adv_data:
-            self.add_data(
+            self.add_packet_frame(
                 data=adv_data,
                 reference=device.address,
                 append_label=format_label
@@ -540,7 +542,7 @@ class MyScanner(BleakScannerConstruct):
             device.address, format_label, advertisement_data, device.rssi)
 ```
 
-*BleakScannerConstruct* does all the logic to perform asynchronous processing of BLE advertisings via the *BleakScanner* method of BLE, including the management of a thread which can be started and stopped through GUI buttons. *add_data()* is a method of *construct-gallery*.
+*BleakScannerConstruct* does all the logic to perform asynchronous processing of BLE advertisings via the *BleakScanner* method of BLE, including the management of a thread which can be started and stopped through GUI buttons. *add_packet_frame()* calls *add_data()* of *construct-gallery*.
 
 ```python
 bleak_advertising(self, device, advertisement_data)
@@ -568,7 +570,7 @@ class BleConstruct(BleakScannerConstruct):
         try:
             adv_data = advertisement_data.manufacturer_data[0x004C]
             ibeacon = adv_format.parse(adv_data)
-            self.add_data(
+            self.add_packet_frame(
                 data=adv_data,
                 reference=device.address
             )

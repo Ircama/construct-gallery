@@ -92,6 +92,7 @@ class BleakScannerConstruct(ConstructGallery):
             clear_label="Log Data",
             added_data_label="Logging data",
             logging_plugin=True,
+            auto_ble_start=False,
             bleak_scanner_kwargs={},
             **kwargs):
         super().__init__(
@@ -128,6 +129,12 @@ class BleakScannerConstruct(ConstructGallery):
         if logging_plugin:
             self.wx_log_window = WxLogging(self, logging.getLogger())
 
+        if auto_ble_start:
+            wx.CallLater(200, self.ble_start)
+
+    def add_packet_frame(self, *args, **kwargs):
+        return wx.CallAfter(self.add_data, *args, **kwargs)
+
     def on_filter(self, event):
         mac = None
         name = None
@@ -162,7 +169,7 @@ class BleakScannerConstruct(ConstructGallery):
         self.startButton.Enable(False)
         self.stopButton.Enable(True)
         self.wx_log_window.log_window.Show()
-        self.status_message(f"BLE started.")
+        wx.CallLater(500, self.status_message, f"BLE started.")
 
     def ble_stop(self):
         if (not self.bluetooth_thread or
