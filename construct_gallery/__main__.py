@@ -7,53 +7,66 @@ from pkgutil import iter_modules
 import construct_editor.gallery
 from importlib import import_module
 from construct_gallery import (
-    ConstructGallery, GalleryItem, BleakScannerConstruct, ConfigEditorPanel)
+    ConstructGallery, GalleryItem, BleakScannerConstruct, ConfigEditorPanel
+)
 from construct_editor.core.model import IntegerFormat
 import construct as cs
 from collections import OrderedDict
 import sys
 import argparse
+import importlib.util
 
 
-def config_main(args=None):
+def config_main(construct_module):
 
-    editing_structure = {
-        0: {
-            "name": "A string",
-            "binary": b"My string",
-            "construct": cs.Struct(
-                "My string" / cs.GreedyString("utf8"),
-            ),
-            "read_only": False,
-            "size": 130,
-            "IntegerFormat": IntegerFormat.Hex,
-        },
-        1: {
-            "name": "An unsigned integer",
-            "binary": b'\x01\x00\x00\x00',
-            "construct": cs.Struct(
-                "Int32ul" / cs.Int32ul,
-            ),
-            "read_only": True,
-            "size": 130,
-            "IntegerFormat": IntegerFormat.Dec,
-        },
-        2: {
-            "name": "Two numbers",
-            "binary": b'\x00\x01\x01',
-            "construct": cs.Struct(
-                "Int16ub" / cs.Int16ub,
-                "Int8ub" / cs.Int8ub
-            ),
-            "read_only": False,
-            "size": 130,
-            "IntegerFormat": IntegerFormat.Dec,
-        },
-    }
+    if construct_module:
+        editing_structure = construct_module.editing_structure
+    else:
+        editing_structure = {
+            0: {
+                "name": "A string",
+                "binary": b"My string",
+                "construct": cs.Struct(
+                    "My string" / cs.GreedyString("utf8"),
+                ),
+                "read_only": False,
+                "size": 130,
+                "IntegerFormat": IntegerFormat.Hex,
+            },
+            1: {
+                "name": "An unsigned integer",
+                "binary": b'\x01\x00\x00\x00',
+                "construct": cs.Struct(
+                    "Int32ul" / cs.Int32ul,
+                ),
+                "read_only": True,
+                "size": 130,
+                "IntegerFormat": IntegerFormat.Dec,
+            },
+            2: {
+                "name": "Two numbers",
+                "binary": b'\x00\x01\x01',
+                "construct": cs.Struct(
+                    "Int16ub" / cs.Int16ub,
+                    "Int8ub" / cs.Int8ub
+                ),
+                "read_only": False,
+                "size": 130,
+                "IntegerFormat": IntegerFormat.Dec,
+            },
+        }
 
     app = wx.App(False)
+    width, height = wx.GetDisplaySize()
+    title = "ConfigEditorPanelFrame demo"
+    if construct_module:
+        title = "Config Editor - " + construct_module.__file__
     frame = wx.Frame(
-        None, title="ConfigEditorPanelFrame demo", size=(1000, 600))
+        None,
+        pos=(int(width * 5 / 100), int(height * 5 / 100)),
+        title=title,
+        size=(int(width * 90 / 100), int(height * 90 / 100))
+    )
     frame.CreateStatusBar()
     main_panel = ConfigEditorPanel(frame,
         editing_structure=editing_structure,
@@ -69,12 +82,22 @@ def config_main(args=None):
         print(f'{i}: {editing_structure[i]["binary"]} --> '
             f'{editing_structure[i]["new_binary"]}')
 
-def bleak_main(args=None):
+def bleak_main(construct_module):
     app = wx.App(False)
+    width, height = wx.GetDisplaySize()
+    title = "BleakScannerConstructFrame demo"
+    if construct_module:
+        title = "BLE Advertising Editor - " + construct_module.__file__
     frame = wx.Frame(
-        None, title="BleakScannerConstructFrame demo", size=(1000, 600))
+        None,
+        pos=(int(width * 5 / 100), int(height * 5 / 100)),
+        title=title,
+        size=(int(width * 90 / 100), int(height * 90 / 100))
+    )
     frame.CreateStatusBar()
-    main_panel = BleakScannerConstruct(frame)
+    main_panel = BleakScannerConstruct(
+        frame, gallery_descriptor=construct_module
+    )
     frame.Bind(wx.EVT_CLOSE, lambda event: on_close(main_panel, event))
     frame.Show(True)
     app.MainLoop()
@@ -83,60 +106,72 @@ def on_close(frame, event):
     frame.on_application_close()
     event.Skip()
 
-def main(args=None):
+def main(construct_module):
     app = wx.App(False)
+    width, height = wx.GetDisplaySize()
+    title = "ConstructGalleryFrame demo"
+    if construct_module:
+        title = "Construct Editor - " + construct_module.__file__
     frame = wx.Frame(
-        None, title="ConstructGalleryFrame demo", size=(1000, 600))
-    frame.CreateStatusBar()
-    sample_modules = {
-        submodule.name: import_module(
-            "construct_editor.gallery." + submodule.name)
-            for submodule in iter_modules(construct_editor.gallery.__path__,)
-    }
-    gallery_descriptor = {  
-        "Signed little endian int (64, 32, 16, 8)": GalleryItem(
-            construct=cs.Struct(
-                "Int64sl" / cs.Int64sl,
-                "Int32sl" / cs.Int32sl,
-                "Int16sl" / cs.Int16sl,
-                "Int8sl" / cs.Int8sl
-            ),
-            clear_log=True,
-            example_bytes=OrderedDict(  # OrderedDict format
-                [
-                    ('A number', bytes.fromhex(
-                        "15 81 e9 7d f4 10 22 11 d2 02 96 49 39 30 0c")),
-                    ('All 1', bytes.fromhex(
-                        "01 00 00 00 00 00 00 00 01 00 00 00 01 00 01")),
-                    ('All 0', bytes(8 + 4 + 2 + 1)),
-                ]
-            )
-        ),
-        "Unsigned big endian int (16, 8)": GalleryItem(
-            construct=cs.Struct(
-                "Int16ub" / cs.Int16ub,
-                "Int8ub" / cs.Int8ub
-            ),
-            clear_log=True,
-            example_bytes={  # dictionary format
-                "A number": bytes.fromhex("04 d2 7b"),
-                "All 1": bytes.fromhex("00 01 01"),
-                "All 0": bytes(2 + 1),
-            },
-        )
-    }
-    gallery_descriptor.update(
-        {
-            module : GalleryItem(
-                        construct=sample_modules[module].gallery_item.construct,
-                        contextkw=sample_modules[module].gallery_item.contextkw,
-                        clear_log=True,
-                        example_bytes=sample_modules[
-                            module].gallery_item.example_binarys
-                    )
-            for module in sample_modules
-        }
+        None,
+        pos=(int(width * 5 / 100), int(height * 5 / 100)),
+        title=title,
+        size=(int(width * 90 / 100), int(height * 90 / 100))
     )
+    frame.CreateStatusBar()
+    if construct_module:
+        gallery_descriptor = construct_module
+    else:
+        sample_modules = {
+            submodule.name: import_module(
+                "construct_editor.gallery." + submodule.name
+            )
+            for submodule in iter_modules(construct_editor.gallery.__path__,)
+        }
+        gallery_descriptor = {
+            "Signed little endian int (64, 32, 16, 8)": GalleryItem(
+                construct=cs.Struct(
+                    "Int64sl" / cs.Int64sl,
+                    "Int32sl" / cs.Int32sl,
+                    "Int16sl" / cs.Int16sl,
+                    "Int8sl" / cs.Int8sl
+                ),
+                clear_log=True,
+                example_bytes=OrderedDict(  # OrderedDict format
+                    [
+                        ('A number', bytes.fromhex(
+                            "15 81 e9 7d f4 10 22 11 d2 02 96 49 39 30 0c")),
+                        ('All 1', bytes.fromhex(
+                            "01 00 00 00 00 00 00 00 01 00 00 00 01 00 01")),
+                        ('All 0', bytes(8 + 4 + 2 + 1)),
+                    ]
+                )
+            ),
+            "Unsigned big endian int (16, 8)": GalleryItem(
+                construct=cs.Struct(
+                    "Int16ub" / cs.Int16ub,
+                    "Int8ub" / cs.Int8ub
+                ),
+                clear_log=True,
+                example_bytes={  # dictionary format
+                    "A number": bytes.fromhex("04 d2 7b"),
+                    "All 1": bytes.fromhex("00 01 01"),
+                    "All 0": bytes(2 + 1),
+                },
+            )
+        }
+        gallery_descriptor.update(
+            {
+                module : GalleryItem(
+                    construct=sample_modules[module].gallery_item.construct,
+                    contextkw=sample_modules[module].gallery_item.contextkw,
+                    clear_log=True,
+                    example_bytes=sample_modules[
+                        module].gallery_item.example_binarys
+                )
+        for module in sample_modules
+            }
+        )
     main_panel = ConstructGallery(frame, gallery_descriptor=gallery_descriptor)
     frame.Bind(wx.EVT_CLOSE, lambda event: on_close(main_panel, event))
     frame.Show(True)
@@ -149,6 +184,15 @@ if __name__ == "__main__":
         prog=package,
         description="Run as python3 -m %s ..." % package,
         epilog='%s demo programs' % package)
+    parser.add_argument(
+        '-m',
+        "--module",
+        dest='construct_module',
+        type=argparse.FileType('r'),
+        help="construct Python module",
+        default=0,
+        nargs=1,
+        metavar='CONSTRUCT_MODULE')
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         '-g',
@@ -169,10 +213,23 @@ if __name__ == "__main__":
         action='store_true',
         help="ConfigEditorPanel demo")
     args = parser.parse_args()
+    construct_module = None
+    if args.construct_module:
+        spec = importlib.util.spec_from_file_location(
+            name='construct_module',
+            location=args.construct_module[0].name
+        )
+        construct_module = importlib.util.module_from_spec(spec)
+        sys.modules['construct_module'] = construct_module
+        try:
+            spec.loader.exec_module(construct_module)
+        except Exception as e:
+            print("Construct module import error:", str(e))
+            sys.exit(2)
 
     if args.bleak:
-        sys.exit(bleak_main())
+        sys.exit(bleak_main(construct_module))
     elif args.config:
-        sys.exit(config_main())
+        sys.exit(config_main(construct_module))
     else:
-        sys.exit(main())
+        sys.exit(main(construct_module))

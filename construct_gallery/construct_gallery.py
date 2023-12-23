@@ -8,7 +8,7 @@ import wx
 import wx.grid
 import construct_editor.wx_widgets.wx_hex_editor
 from construct_editor.wx_widgets import WxConstructHexEditor
-from importlib import reload
+import importlib.util
 from datetime import datetime, timezone
 import pickle
 from collections import OrderedDict
@@ -742,9 +742,9 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.col_type_width = col_type_width
         self.col_value_width = col_value_width
         
-        c_sep = 1
-        if 'wxGTK' in wx.PlatformInfo:
-            c_sep = 4
+        c_sep = 2
+        if 'wxMSW' in wx.PlatformInfo:
+            c_sep = 1
 
         self.skip_add_selection = False
         self.dlg_as = None
@@ -989,43 +989,28 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
 
     def zoom(self, n):
         dvc = self.construct_hex_editor.construct_editor._dvc
-        font_size = dvc.GetFont().GetPointSize()
-        default_font_size = dvc.GetClassDefaultAttributes().font.GetPointSize()
 
         if n is None:
             self.current_zoom = self.default_zoom
         else:
             self.current_zoom += n
 
-        if default_font_size < 10:  # This should occur with MS Windows
-            if self.current_zoom < 12:
-                dvc.SetFont(wx.Font(wx.FontInfo(5)))
-            if self.current_zoom < 13:
-                dvc.SetFont(wx.Font(wx.FontInfo(6)))
-            elif self.current_zoom < 16:
-                dvc.SetFont(wx.Font(wx.FontInfo(7)))
-            elif self.current_zoom < 18:
-                dvc.SetFont(wx.Font(wx.FontInfo(8)))
-            else:
-                dvc.SetFont(dvc.GetClassDefaultAttributes().font)
-        else:  # Linux GTK
-            dvc.SetFont(
-                dvc.GetClassDefaultAttributes().font
-                if n is None else wx.Font(
-                    default_font_size + self.current_zoom - self.default_zoom,
-                    wx.FONTFAMILY_DEFAULT,
-                    wx.FONTSTYLE_NORMAL,
-                    wx.FONTWEIGHT_EXTRALIGHT
-                )
-            )
+        if self.current_zoom < 12:
+            dvc.SetFont(wx.Font(wx.FontInfo(5)))
+        if self.current_zoom < 13:
+            dvc.SetFont(wx.Font(wx.FontInfo(6)))
+        elif self.current_zoom < 16:
+            dvc.SetFont(wx.Font(wx.FontInfo(7)))
+        elif self.current_zoom < 18:
+            dvc.SetFont(wx.Font(wx.FontInfo(8)))
+        else:
+            dvc.SetFont(dvc.GetClassDefaultAttributes().font)
 
         if self.current_zoom < self.default_zoom - 11:
             self.current_zoom = self.default_zoom - 11
         if self.current_zoom > self.default_zoom + 5:
             self.current_zoom = self.default_zoom + 5
-        if default_font_size < 10:
-            dvc.SetRowHeight(self.current_zoom)  # Smaller than font size might not be supported by GTK
-        self.construct_hex_editor.binary = self.construct_hex_editor.binary
+        dvc.SetRowHeight(self.current_zoom)
         self.construct_hex_editor.construct_editor.Refresh()
 
     def on_application_close(self):
@@ -1083,8 +1068,27 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         if not self.gallery_descriptor:
             return
         if isinstance(self.gallery_descriptor, ModuleType):
-            construct_module = reload(self.gallery_descriptor)
-            gallery_descr = construct_module.gallery_descriptor
+            spec = importlib.util.spec_from_file_location(
+                name=self.gallery_descriptor.__name__,
+                location=self.gallery_descriptor.__file__
+            )
+            construct_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(construct_module)
+            if "gallery_descriptor" in dir(construct_module):
+                gallery_descr = construct_module.gallery_descriptor
+            elif "construct" in dir(construct_module):
+                gallery_descr = {
+                    "construct": GalleryItem(
+                        construct=construct_module.construct
+                    )
+                }
+            else:
+                wx.LogError(
+                    "Missing 'construct' or 'gallery_descriptor' in "
+                    f"{construct_module.__file__}"
+                )
+                return
+            self.gallery_descriptor.gallery_descriptor = gallery_descr
         else:
             gallery_descr = self.gallery_descriptor
         self.construct_selector_lbx.Clear()
@@ -1101,6 +1105,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self.construct_hex_editor.construct = self.used_construct
             self.construct_hex_editor.binary = self.construct_hex_editor.binary
             self.construct_hex_editor.construct_editor.expand_all()
+        self.change_gallery_selection()
 
     def on_save_data_file_clicked(self, event):
         self.confirm_changed_data()

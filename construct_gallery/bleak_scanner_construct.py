@@ -214,8 +214,10 @@ class BleakScannerConstruct(ConstructGallery):
                 return
             self.bleak_advertising(device, advertisement_data)
 
+        scanning_mode = bleak_scanner_kwargs.get('scanning_mode')
         if (
-            bleak_scanner_kwargs.get('scanning_mode').lower() == 'passive'
+            scanning_mode
+            and scanning_mode.lower() == 'passive'
             and "BleakScannerBlueZDBus" in str(
                 bleak.get_platform_scanner_backend_type()
             )
