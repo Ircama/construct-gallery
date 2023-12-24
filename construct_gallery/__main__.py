@@ -243,7 +243,14 @@ if __name__ == "__main__":
             name=args.construct_module.name,
             location=args.construct_module.name
         )
-        construct_module = importlib.util.module_from_spec(spec)
+        if not spec:
+            print("Not a Python module:", args.construct_module.name)
+            sys.exit(2)
+        try:
+            construct_module = importlib.util.module_from_spec(spec)
+        except Exception as e:
+            print("Cannot identify module:", str(e), s)
+            sys.exit(2)
         sys.modules['construct_module'] = construct_module
         try:
             spec.loader.exec_module(construct_module)
