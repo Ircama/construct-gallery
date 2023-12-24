@@ -77,6 +77,7 @@ class FilterEntryDialog(wx.Dialog):
 
 
 class BleakScannerConstruct(ConstructGallery):
+    BLEAK_IS_USED = True  # it means this class is valid and bleak is installed
     bleak_stop_event = None
     bleak_event_loop = None
     bluetooth_thread = None
@@ -262,4 +263,5 @@ class BleakScannerConstruct(ConstructGallery):
     def bleak_advertising(self, device, advertisement_data):
         logging.info(
             "Advertising: device=%s, advertisement_data=%s",
-            device, advertisement_data)
+            device, advertisement_data
+        )

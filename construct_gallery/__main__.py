@@ -1,5 +1,5 @@
 #############################################################################
-# construct_gallery module (examples)
+# construct_gallery module (main)
 #############################################################################
 
 import wx
@@ -7,7 +7,7 @@ from pkgutil import iter_modules
 import construct_editor.gallery
 from importlib import import_module
 from construct_gallery import (
-    ConstructGallery, GalleryItem, BleakScannerConstruct, ConfigEditorPanel
+    ConstructGallery, GalleryItem, ConfigEditorPanel
 )
 from construct_editor.core.model import IntegerFormat
 import construct as cs
@@ -15,6 +15,25 @@ from collections import OrderedDict
 import sys
 import argparse
 import importlib.util
+try:
+    import bleak.uuids
+    from construct_gallery import BleakScannerConstruct
+except ImportError:
+    class BleakScannerConstruct:
+        BLEAK_IS_USED = False  # it means invalid class and black not installed
+
+
+class SDBleakScannerConstruct(BleakScannerConstruct):
+    def bleak_advertising(self, device, advertisement_data):
+        if advertisement_data.service_data:
+            for name, data in advertisement_data.service_data.items():
+                str_name = bleak.uuids.uuidstr_to_str(name)
+                self.add_packet_frame(
+                    data=data,
+                    append_label=str_name,
+                    date_separator=" | ",
+                    reference=device.address,
+                )
 
 
 def config_main(construct_module):
@@ -88,6 +107,12 @@ def bleak_main(construct_module):
     title = "BleakScannerConstructFrame demo"
     if construct_module:
         title = "BLE Advertising Editor - " + construct_module.__file__
+    else:
+        construct_module = {
+            "Bytestream": GalleryItem(construct=cs.GreedyRange(cs.Byte)),
+            "Bytearray": GalleryItem(construct=cs.GreedyBytes),
+            "UTF8 string": GalleryItem(construct=cs.GreedyString("utf8")),
+        }
     frame = wx.Frame(
         None,
         pos=(int(width * 5 / 100), int(height * 5 / 100)),
@@ -95,7 +120,7 @@ def bleak_main(construct_module):
         size=(int(width * 90 / 100), int(height * 90 / 100))
     )
     frame.CreateStatusBar()
-    main_panel = BleakScannerConstruct(
+    main_panel = SDBleakScannerConstruct(
         frame, gallery_descriptor=construct_module
     )
     frame.Bind(wx.EVT_CLOSE, lambda event: on_close(main_panel, event))
@@ -111,7 +136,7 @@ def main(construct_module):
     width, height = wx.GetDisplaySize()
     title = "ConstructGalleryFrame demo"
     if construct_module:
-        title = "Construct Editor - " + construct_module.__file__
+        title = "Construct Gallery Editor - " + construct_module.__file__
     frame = wx.Frame(
         None,
         pos=(int(width * 5 / 100), int(height * 5 / 100)),
@@ -122,12 +147,6 @@ def main(construct_module):
     if construct_module:
         gallery_descriptor = construct_module
     else:
-        sample_modules = {
-            submodule.name: import_module(
-                "construct_editor.gallery." + submodule.name
-            )
-            for submodule in iter_modules(construct_editor.gallery.__path__,)
-        }
         gallery_descriptor = {
             "Signed little endian int (64, 32, 16, 8)": GalleryItem(
                 construct=cs.Struct(
@@ -160,6 +179,12 @@ def main(construct_module):
                 },
             )
         }
+        sample_modules = {
+            submodule.name: import_module(
+                "construct_editor.gallery." + submodule.name
+            )
+            for submodule in iter_modules(construct_editor.gallery.__path__,)
+        }
         gallery_descriptor.update(
             {
                 module : GalleryItem(
@@ -183,15 +208,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog=package,
         description="Run as python3 -m %s ..." % package,
-        epilog='%s demo programs' % package)
+        epilog='%s utility' % package)
     parser.add_argument(
-        '-m',
-        "--module",
-        dest='construct_module',
+        "construct_module",
         type=argparse.FileType('r'),
         help="construct Python module",
         default=0,
-        nargs=1,
+        nargs='?',
         metavar='CONSTRUCT_MODULE')
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -200,12 +223,13 @@ if __name__ == "__main__":
         dest='gallery',
         action='store_true',
         help="ConstructGallery demo (default)")
-    group.add_argument(
-        '-b',
-        "--bleak",
-        dest='bleak',
-        action='store_true',
-        help="BleakScannerConstruct demo")
+    if BleakScannerConstruct.BLEAK_IS_USED:
+        group.add_argument(
+            '-b',
+            "--bleak",
+            dest='bleak',
+            action='store_true',
+            help="BleakScannerConstruct demo")
     group.add_argument(
         '-c',
         "--config",
@@ -216,8 +240,8 @@ if __name__ == "__main__":
     construct_module = None
     if args.construct_module:
         spec = importlib.util.spec_from_file_location(
-            name='construct_module',
-            location=args.construct_module[0].name
+            name=args.construct_module.name,
+            location=args.construct_module.name
         )
         construct_module = importlib.util.module_from_spec(spec)
         sys.modules['construct_module'] = construct_module
@@ -227,7 +251,7 @@ if __name__ == "__main__":
             print("Construct module import error:", str(e))
             sys.exit(2)
 
-    if args.bleak:
+    if BleakScannerConstruct.BLEAK_IS_USED and args.bleak:
         sys.exit(bleak_main(construct_module))
     elif args.config:
         sys.exit(config_main(construct_module))

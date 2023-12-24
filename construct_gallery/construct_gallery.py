@@ -55,6 +55,16 @@ class HexEditorGrid(  # add plugins to HexEditorGrid
     def build_context_menu(self):
         menus = super().build_context_menu()
         menus.insert(-3, None)  # add an horizontal line before the two plugins
+
+        menus.append(
+            ContextMenuItem(
+                wx_id=wx.ID_ANY,
+                name="Add hex Element Data to the Gallery",
+                callback=lambda event: self.cg.add_selection(),
+                toggle_state=self.allow_python,
+                enabled=not self.read_only,
+            )
+        )
         return menus
 
 
@@ -767,7 +777,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self,
             id=wx.ID_ANY,
             pos=wx.DefaultPosition,
-            size=wx.Size(300, -1),
+            size=wx.DefaultSize,
             choices=[],
             name="construct_selector",
             style=wx.LB_HSCROLL | wx.LB_NEEDED_SB
@@ -929,8 +939,11 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         )
 
         # monkey-patch HexEditorGrid
+        HexEditorGrid.cg = self
         if run_hex_editor_plugins:
-            construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid = HexEditorGrid
+            construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid = (
+                HexEditorGrid
+            )
 
         if not self.used_construct:
             self.status_message("Missing gallery_descriptor parameter.")
@@ -986,6 +999,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         head_bac_colr = dvc.GetClassDefaultAttributes().colBg
         attr = wx.ItemAttr(head_txt_colr,head_bac_colr,font_c)
         dvc.SetHeaderAttr(attr)
+
+        self.GetTopLevelParent().SetMinSize((700, 320));
 
     def zoom(self, n):
         dvc = self.construct_hex_editor.construct_editor._dvc
@@ -1044,6 +1059,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         """
         Callback triggered each time the binary value is changed
         """
+        self.construct_hex_editor.construct_editor.expand_all()
+
         # Static resize
         cols = self.construct_hex_editor.construct_editor._dvc.GetColumns()
         if self.col_name_width:
@@ -1079,8 +1096,14 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             elif "construct" in dir(construct_module):
                 gallery_descr = {
                     "construct": GalleryItem(
-                        construct=construct_module.construct
-                    )
+                        construct=construct_module.construct,
+                    ),
+                    "Bytestream": GalleryItem(
+                        construct=cs.GreedyRange(cs.Byte)
+                    ),
+                    "UTF8 string": GalleryItem(
+                        construct=cs.GreedyString("utf8")
+                    ),
                 }
             else:
                 wx.LogError(
@@ -1659,6 +1682,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                 self.gallery_selector_lbx.GetStringSelection())
             self.construct_hex_editor.binary = sample_binary
             self.construct_hex_editor.construct_editor.expand_all()
+        else:
+            self.construct_hex_editor.binary = self.construct_hex_editor.binary
 
     def on_right_clicked(self, event):
         if not self.construct_hex_editor:
@@ -1668,6 +1693,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             return
         item = obj.HitTest(event.GetPosition())
         if item < 0:
+            self.add_selection()
             return
         self.gallery_selector_lbx.SetSelection(item)
         #value = self.gallery_selector_lbx.GetString(item)
@@ -1860,6 +1886,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             discard_duplicates=False,
             date_separator=" ",
             duplicate_separator="-"):
+        if not self.construct_hex_editor:
+            return False
         if not self.construct_hex_editor.IsShown():
             self.construct_hex_editor.construct_editor.Show()
             self.construct_hex_editor.contextkw = GalleryDict.get_contextkw(
