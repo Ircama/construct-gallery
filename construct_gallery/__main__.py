@@ -131,7 +131,7 @@ def on_close(frame, event):
     frame.on_application_close()
     event.Skip()
 
-def main(construct_module):
+def gallery_main(construct_module):
     app = wx.App(False)
     width, height = wx.GetDisplaySize()
     title = "ConstructGalleryFrame demo"
@@ -202,8 +202,7 @@ def main(construct_module):
     frame.Show(True)
     app.MainLoop()
 
-
-if __name__ == "__main__":
+def main(run_bleak=False):
     package = sys.modules[ConstructGallery.__module__].__package__
     parser = argparse.ArgumentParser(
         prog=package,
@@ -258,9 +257,13 @@ if __name__ == "__main__":
             print("Construct module import error:", str(e))
             sys.exit(2)
 
-    if BleakScannerConstruct.BLEAK_IS_USED and args.bleak:
+    if BleakScannerConstruct.BLEAK_IS_USED and (args.bleak or run_bleak):
         sys.exit(bleak_main(construct_module))
     elif args.config:
         sys.exit(config_main(construct_module))
     else:
-        sys.exit(main(construct_module))
+        sys.exit(gallery_main(construct_module))
+
+
+if __name__ == "__main__":
+    return main()
