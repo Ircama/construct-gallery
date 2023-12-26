@@ -269,4 +269,4 @@ def main(run_bleak=False):
 
 
 if __name__ == "__main__":
-    return main()
+    main()
