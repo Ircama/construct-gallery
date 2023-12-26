@@ -21,6 +21,7 @@ import wx.lib.dialogs
 from . import allow_python_expr_plugin
 from . import decimal_convert_plugin
 from . import string_convert_plugin
+from . import edit_plugin
 from construct_editor.wx_widgets.wx_exception_dialog import (
     ExceptionInfo,
     WxExceptionDialog,
@@ -49,19 +50,20 @@ class GalleryItem:
 
 class HexEditorGrid(  # add plugins to HexEditorGrid
         string_convert_plugin.HexEditorGrid,
+        edit_plugin.HexEditorGrid,
         decimal_convert_plugin.HexEditorGrid,
         allow_python_expr_plugin.HexEditorGrid,
         construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid):
     def build_context_menu(self):
         menus = super().build_context_menu()
-        menus.insert(-3, None)  # add an horizontal line before the two plugins
+        menus.insert(-5, None)  # add an horizontal line before the two plugins
 
         menus.append(
             ContextMenuItem(
                 wx_id=wx.ID_ANY,
                 name="Add hex Element Data to the Gallery",
                 callback=lambda event: self.cg.add_selection(),
-                toggle_state=self.allow_python,
+                toggle_state=None,
                 enabled=not self.read_only,
             )
         )
@@ -782,10 +784,13 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             name="construct_selector",
             style=wx.LB_HSCROLL | wx.LB_NEEDED_SB
         )
-        self.load_construct_selector()
         self.vsizer.Add(self.construct_selector_lbx, 0, wx.ALL | wx.EXPAND, 1)
         self.construct_selector_lbx.Bind(
             wx.EVT_LISTBOX, lambda event: self.change_gallery_selection())
+
+        if not self.load_construct_selector():
+            parent.Destroy()
+            return
 
         # horizontal line
         self.vsizer.Add(
@@ -1083,7 +1088,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
     def load_construct_selector(self):
         """ load data (construct labels) in the "construct" selector """
         if not self.gallery_descriptor:
-            return
+            return False
         if isinstance(self.gallery_descriptor, ModuleType):
             spec = importlib.util.spec_from_file_location(
                 name=self.gallery_descriptor.__name__,
@@ -1093,24 +1098,29 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             spec.loader.exec_module(construct_module)
             if "gallery_descriptor" in dir(construct_module):
                 gallery_descr = construct_module.gallery_descriptor
-            elif "construct" in dir(construct_module):
+            elif "construct_format" in dir(construct_module):
                 gallery_descr = {
-                    "construct": GalleryItem(
-                        construct=construct_module.construct,
+                    "construct_format": GalleryItem(
+                        construct=construct_module.construct_format,
                     ),
-                    "Bytestream": GalleryItem(
+                    "Bytes": GalleryItem(
                         construct=cs.GreedyRange(cs.Byte)
                     ),
-                    "UTF8 string": GalleryItem(
+                    "Characters": GalleryItem(
+                        construct=cs.GreedyRange(cs.PaddedString(1, "utf8"))
+                    ),
+                    "UTF8 String": GalleryItem(
                         construct=cs.GreedyString("utf8")
                     ),
                 }
             else:
-                wx.LogError(
-                    "Missing 'construct' or 'gallery_descriptor' in "
-                    f"{construct_module.__file__}"
+                wx.MessageBox(
+                    "Missing 'construct_format' or 'gallery_descriptor' in "
+                    f"{construct_module.__file__}",
+                    "Cannot load Python module",
+                       wx.ICON_ERROR | wx.CENTRE | wx.OK
                 )
-                return
+                return False
             self.gallery_descriptor.gallery_descriptor = gallery_descr
         else:
             gallery_descr = self.gallery_descriptor
@@ -1129,6 +1139,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self.construct_hex_editor.binary = self.construct_hex_editor.binary
             self.construct_hex_editor.construct_editor.expand_all()
         self.change_gallery_selection()
+        return True
 
     def on_save_data_file_clicked(self, event):
         self.confirm_changed_data()

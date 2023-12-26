@@ -237,17 +237,25 @@ class BleakScannerConstruct(ConstructGallery):
                 )
             }
             bleak_scanner_kwargs = {**bleak_scanner_kwargs, **ble_z_args}
-            subprocess.run(
-                "which hcitool && sudo -n hcitool cmd 0x08 0x000C 0x00 0x00"
-                " && sudo -n hcitool cmd 0x08 0x000C 0x01 0x00",
-                shell=True,
-                capture_output=True
-            )
         try:
             async with BleakScanner(
                 detection_callback=partial(detection_callback),
                 **bleak_scanner_kwargs
             ) as scanner:
+                if (
+                    scanning_mode
+                    and scanning_mode.lower() == 'passive'
+                    and "BleakScannerBlueZDBus" in str(
+                        bleak.get_platform_scanner_backend_type()
+                    )
+                ):
+                    subprocess.run(
+                        "which hcitool"
+                        " && sudo -n hcitool cmd 0x08 0x000C 0x00 0x00"
+                        " && sudo -n hcitool cmd 0x08 0x000C 0x01 0x00",
+                        shell=True,
+                        capture_output=True
+                    )
                 await self.bleak_stop_event.wait()
         except (FileNotFoundError, BleakError) as e:
             logging.critical("Critical error: Bluetooth not available. %s", e)
