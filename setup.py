@@ -100,7 +100,7 @@ setup(
     entry_points={
         "gui_scripts": [
             "construct-gallery=construct_gallery.__main__:main",
-            "bleak_scanner_construct=construct_gallery.__main__:main(True)"
+            "bleak_scanner_construct=construct_gallery.__main__:ble_main"
         ]
     },
     include_package_data=True,

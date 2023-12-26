@@ -36,7 +36,7 @@ class SDBleakScannerConstruct(BleakScannerConstruct):
                 )
 
 
-def config_main(construct_module):
+def config_app(construct_module):
 
     if construct_module:
         editing_structure = construct_module.editing_structure
@@ -101,7 +101,7 @@ def config_main(construct_module):
         print(f'{i}: {editing_structure[i]["binary"]} --> '
             f'{editing_structure[i]["new_binary"]}')
 
-def bleak_main(construct_module):
+def bleak_app(construct_module):
     app = wx.App(False)
     width, height = wx.GetDisplaySize()
     title = "BleakScannerConstructFrame demo"
@@ -131,7 +131,7 @@ def on_close(frame, event):
     frame.on_application_close()
     event.Skip()
 
-def gallery_main(construct_module):
+def gallery_app(construct_module):
     app = wx.App(False)
     width, height = wx.GetDisplaySize()
     title = "ConstructGalleryFrame demo"
@@ -202,6 +202,9 @@ def gallery_main(construct_module):
     frame.Show(True)
     app.MainLoop()
 
+def ble_main():
+    return main(True)
+
 def main(run_bleak=False):
     package = sys.modules[ConstructGallery.__module__].__package__
     parser = argparse.ArgumentParser(
@@ -258,11 +261,11 @@ def main(run_bleak=False):
             sys.exit(2)
 
     if BleakScannerConstruct.BLEAK_IS_USED and (args.bleak or run_bleak):
-        sys.exit(bleak_main(construct_module))
+        sys.exit(bleak_app(construct_module))
     elif args.config:
-        sys.exit(config_main(construct_module))
+        sys.exit(config_app(construct_module))
     else:
-        sys.exit(gallery_main(construct_module))
+        sys.exit(gallery_app(construct_module))
 
 
 if __name__ == "__main__":
