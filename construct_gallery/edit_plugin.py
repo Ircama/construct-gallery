@@ -91,7 +91,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
         return value_bytes
 
     def on_text_change(self, event):
-        sep = u" \u250a "  # thin vertical dotted bar
+        sep = u"\u250a"  # thin vertical dotted bar
         entered_text = self.text_ctrl.GetValue()
         if self.input_bytes:
             value_bytes = self.string_to_byts(entered_text)
@@ -99,7 +99,13 @@ class MultiLineTextEntryDialog(wx.Dialog):
             value_bytes = entered_text.encode()
         text = ""
         for addr, bytes_dump, str_dump in HexDump(value_bytes):
-            text += f"{addr:<9}" + sep + f"{bytes_dump:<52}" + sep + f" {str_dump:<16}\n"
+            text += (
+                f"{addr:<9}"
+                + sep
+                + f"{bytes_dump:<52}"
+                + sep
+                + f"{str_dump:<16}\n"
+            )
         self.dump.SetValue(text)
 
         self.panel.SetSizer(None)
