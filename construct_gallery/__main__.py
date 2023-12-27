@@ -285,7 +285,7 @@ def main(run_bleak=False):
         try:
             construct_module = importlib.util.module_from_spec(spec)
         except Exception as e:
-            print("Cannot identify module:", str(e), s)
+            print("Cannot identify module:", str(e))
             sys.exit(2)
         sys.modules['construct_module'] = construct_module
         try:
