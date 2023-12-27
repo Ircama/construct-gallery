@@ -23,14 +23,12 @@ class MultiLineTextEntryDialog(wx.Dialog):
         try:
             self.text_ctrl = wx.TextCtrl(
                 self.panel,
-                size=wx.Size(-1, 100),
                 style=wx.TE_MULTILINE,
                 value=default_value
             )
         except UnicodeDecodeError:
             self.text_ctrl = wx.TextCtrl(
                 self.panel,
-                size=wx.Size(-1, 100),
                 style=wx.TE_MULTILINE
             )
         current_font = self.text_ctrl.GetFont()
@@ -44,7 +42,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
         self.text_ctrl.Bind(wx.EVT_TEXT, self.on_text_change)
 
         if self.parent._selection[1] is not None:
-            label = "Insert replacing selection"
+            label = "Insert/shrink replacing selection"
         else:
             label = "Insert before"
         self.insert_button = wx.Button(
@@ -63,7 +61,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
         char_width, char_height = self.text_ctrl.GetTextExtent('A')
         self.dump = wx.TextCtrl(
             self.panel,
-            size=wx.Size(char_width * 90, 100),
+            size=wx.Size(char_width * 90, char_height * 5.5),
             style=wx.TE_MULTILINE | wx.TE_READONLY,
             value=""
         )
@@ -83,7 +81,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
 
         self.setup_layout(value_bytes)
 
-    def string_to_byts(self, entered_text):
+    def string_to_byts_no_python(self, entered_text):
         save = self.parent.allow_python
         self.parent.allow_python = None
         value_bytes = self.parent.string_to_byts(entered_text)
@@ -94,7 +92,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
         sep = u"\u250a"  # thin vertical dotted bar
         entered_text = self.text_ctrl.GetValue()
         if self.input_bytes:
-            value_bytes = self.string_to_byts(entered_text)
+            value_bytes = self.string_to_byts_no_python(entered_text)
         else:
             value_bytes = entered_text.encode()
         text = ""
@@ -132,9 +130,9 @@ class MultiLineTextEntryDialog(wx.Dialog):
     def on_insert(self, event):
         value = self.text_ctrl.GetValue().encode()
         if self.input_bytes:
-            value = self.parent.string_to_byts(value)
+            value = self.parent.string_to_byts(self.text_ctrl.GetValue())
             if value is False:
-                value = self.string_to_byts(value)
+                value = self.string_to_byts_no_python(self.text_ctrl.GetValue())
         if not value or not len(value):
             self.EndModal(wx.ID_CANCEL)
             return
@@ -151,6 +149,11 @@ class MultiLineTextEntryDialog(wx.Dialog):
                 self.parent._selection[0],
                 self.parent._selection[0] + len(value) - 1
             )
+            if len(value) < length:
+                self.parent._binary_data.remove_range(
+                    self.parent._selection[1] + len(value),
+                    length - len(value)
+                )
         else:
             self.parent._binary_data.insert_range(
                 self.parent._selection[0], value
@@ -160,9 +163,9 @@ class MultiLineTextEntryDialog(wx.Dialog):
     def on_replace(self, event):
         value = self.text_ctrl.GetValue().encode()
         if self.input_bytes:
-            value = self.parent.string_to_byts(value)
+            value = self.parent.string_to_byts(self.text_ctrl.GetValue())
             if value is False:
-                value = self.string_to_byts(value)
+                value = self.string_to_byts_no_python(self.text_ctrl.GetValue())
         if not value or not len(value):
             self.EndModal(wx.ID_CANCEL)
             return
@@ -174,9 +177,9 @@ class MultiLineTextEntryDialog(wx.Dialog):
     def on_overwrite_all(self, event):
         value = self.text_ctrl.GetValue().encode()
         if self.input_bytes:
-            value = self.parent.string_to_byts(value)
+            value = self.parent.string_to_byts(self.text_ctrl.GetValue())
             if value is False:
-                value = self.string_to_byts(value)
+                value = self.string_to_byts_no_python(self.text_ctrl.GetValue())
         if not value or not len(value):
             self.EndModal(wx.ID_CANCEL)
             return
@@ -214,10 +217,10 @@ class HexEditorGrid:
         menus.append(
             ContextMenuItem(
                 wx_id=wx.ID_ANY,
-                name="Edit UTF-8 string",
+                name="Edit UTF-8 text",
                 callback=lambda event: self._on_write_string(
-                    title='Edit UTF-8 string',
-                    label='Enter text:',
+                    title='Edit UTF-8 text',
+                    label='Enter UTF-8 text:',
                     input_bytes=False
                 ),
                 toggle_state=None,
