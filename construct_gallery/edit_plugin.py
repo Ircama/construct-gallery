@@ -2,47 +2,9 @@
 
 import wx
 from construct_editor.wx_widgets.wx_hex_editor import ContextMenuItem
+from .string_convert_plugin import HexDump
 import construct
 import re
-
-
-class HexDump:
-    def __init__(self, buf, off=0):
-        self.buf = buf
-        self.off = off
-
-    def __iter__(self):
-        last_bs, last_line = None, None
-        for i in range(0, len(self.buf), 16):
-            bs = bytearray(self.buf[i : i + 16])
-            addr = "{:08x}".format(self.off + i)
-            line = "  {:23}  {:23}  ".format(
-                " ".join(("{:02x}".format(x) for x in bs[:8])),
-                " ".join(("{:02x}".format(x) for x in bs[8:])),
-            )
-            str_repr = "{:16}".format(
-                "".join((chr(x) if 32 <= x < 127 else "." for x in bs)),
-            )
-            if bs == last_bs:
-                addr = "*"
-                line = ""
-                str_repr = ""
-            if bs != last_bs or line != last_line:
-                yield addr, line, str_repr
-            last_bs, last_line = bs, line
-        yield "{:08x}".format(self.off + len(self.buf)), "", ""
-
-    def __str__(self):
-        buf = ""
-        for addr, line, str_repr in self:
-            if str_repr:
-                buf += addr + line + '[' + str_repr + ']\n'
-            else:
-                buf += addr + line + '\n'
-        return buf
-
-    def __repr__(self):
-        return self.__str__()
 
 
 class MultiLineTextEntryDialog(wx.Dialog):
@@ -101,7 +63,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
         char_width, char_height = self.text_ctrl.GetTextExtent('A')
         self.dump = wx.TextCtrl(
             self.panel,
-            size=wx.Size(char_width * 85, 100),
+            size=wx.Size(char_width * 90, 100),
             style=wx.TE_MULTILINE | wx.TE_READONLY,
             value=""
         )
@@ -129,6 +91,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
         return value_bytes
 
     def on_text_change(self, event):
+        sep = u" \u250a "  # thin vertical dotted bar
         entered_text = self.text_ctrl.GetValue()
         if self.input_bytes:
             value_bytes = self.string_to_byts(entered_text)
@@ -136,7 +99,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
             value_bytes = entered_text.encode()
         text = ""
         for addr, bytes_dump, str_dump in HexDump(value_bytes):
-            text += f"{addr:<9}{bytes_dump:<52}{str_dump:<16}\n"
+            text += f"{addr:<9}" + sep + f"{bytes_dump:<52}" + sep + f" {str_dump:<16}\n"
         self.dump.SetValue(text)
 
         self.panel.SetSizer(None)

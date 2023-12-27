@@ -328,9 +328,10 @@ class RefKeyDescrFrame(wx.Frame):
         self.parent = parent
         self.grid = EditableGrid(self)
         self.grid.CreateGrid(10, 3)
-        self.grid.SetColSize(0, 130)
-        self.grid.SetColSize(1, 300)
-        self.grid.SetColSize(2, 300)
+        char_width, char_height = self.grid.GetTextExtent('A')
+        self.grid.SetColSize(0, 18 * char_width)
+        self.grid.SetColSize(1, 32 * char_width)
+        self.grid.SetColSize(2, 30 * char_width)
         self.grid.SetColLabelValue(0, parent.reference_label)
         self.grid.DisableDragRowSize()
         self.grid.DisableDragGridSize()

@@ -37,7 +37,6 @@ class SDBleakScannerConstruct(BleakScannerConstruct):
 
 
 def config_app(construct_module):
-
     if construct_module:
         editing_structure = construct_module.editing_structure
     else:
@@ -101,7 +100,7 @@ def config_app(construct_module):
         print(f'{i}: {editing_structure[i]["binary"]} --> '
             f'{editing_structure[i]["new_binary"]}')
 
-def bleak_app(construct_module):
+def bleak_app(construct_module, reference_label, key_label, description_label):
     app = wx.App(False)
     width, height = wx.GetDisplaySize()
     title = "BleakScannerConstructFrame demo"
@@ -121,7 +120,10 @@ def bleak_app(construct_module):
     )
     frame.CreateStatusBar()
     main_panel = SDBleakScannerConstruct(
-        frame, gallery_descriptor=construct_module
+        frame, gallery_descriptor=construct_module,
+        reference_label=reference_label,
+        key_label=key_label,
+        description_label=description_label
     )
     frame.Bind(wx.EVT_CLOSE, lambda event: on_close(main_panel, event))
     frame.Show(True)
@@ -131,7 +133,9 @@ def on_close(frame, event):
     frame.on_application_close()
     event.Skip()
 
-def gallery_app(construct_module):
+def gallery_app(
+        construct_module, reference_label, key_label, description_label
+    ):
     app = wx.App(False)
     width, height = wx.GetDisplaySize()
     title = "ConstructGalleryFrame demo"
@@ -197,7 +201,13 @@ def gallery_app(construct_module):
         for module in sample_modules
             }
         )
-    main_panel = ConstructGallery(frame, gallery_descriptor=gallery_descriptor)
+    main_panel = ConstructGallery(
+        frame,
+        gallery_descriptor=gallery_descriptor,
+        reference_label=reference_label,
+        key_label=key_label,
+        description_label=description_label
+    )
     frame.Bind(wx.EVT_CLOSE, lambda event: on_close(main_panel, event))
     frame.Show(True)
     app.MainLoop()
@@ -218,6 +228,30 @@ def main(run_bleak=False):
         default=0,
         nargs='?',
         metavar='CONSTRUCT_MODULE')
+    parser.add_argument(
+        "-R"
+        '--reference_label',
+        dest='reference_label',
+        action='store',
+        type=str,
+        help='reference_label string'
+    )
+    parser.add_argument(
+        '-K',
+        '--key_label',
+        dest='key_label',
+        action='store',
+        type=str,
+        help='key_label string'
+    )
+    parser.add_argument(
+        '-D',
+        '--description_label',
+        dest='description_label',
+        action='store',
+        type=str,
+        help='description_label string'
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         '-g',
@@ -261,11 +295,25 @@ def main(run_bleak=False):
             sys.exit(2)
 
     if BleakScannerConstruct.BLEAK_IS_USED and (args.bleak or run_bleak):
-        sys.exit(bleak_app(construct_module))
+        sys.exit(
+            bleak_app(
+                construct_module,
+                args.reference_label,
+                args.key_label,
+                args.description_label
+            )
+        )
     elif args.config:
         sys.exit(config_app(construct_module))
     else:
-        sys.exit(gallery_app(construct_module))
+        sys.exit(
+            gallery_app(
+                construct_module,
+                args.reference_label,
+                args.key_label,
+                args.description_label
+            )
+        )
 
 
 if __name__ == "__main__":
