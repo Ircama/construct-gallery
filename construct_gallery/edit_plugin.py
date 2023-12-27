@@ -130,7 +130,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
         main_sizer.Fit(self)
 
     def on_insert(self, event):
-        value = self.text_ctrl.GetValue()
+        value = self.text_ctrl.GetValue().encode()
         if self.input_bytes:
             value = self.parent.string_to_byts(value)
             if value is False:
@@ -158,7 +158,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
         self.EndModal(wx.ID_OK)
 
     def on_replace(self, event):
-        value = self.text_ctrl.GetValue()
+        value = self.text_ctrl.GetValue().encode()
         if self.input_bytes:
             value = self.parent.string_to_byts(value)
             if value is False:
@@ -172,7 +172,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
         self.EndModal(wx.ID_OK)
 
     def on_overwrite_all(self, event):
-        value = self.text_ctrl.GetValue()
+        value = self.text_ctrl.GetValue().encode()
         if self.input_bytes:
             value = self.parent.string_to_byts(value)
             if value is False:

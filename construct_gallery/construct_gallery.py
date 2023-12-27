@@ -330,7 +330,7 @@ class RefKeyDescrFrame(wx.Frame):
         self.grid.CreateGrid(10, 3)
         char_width, char_height = self.grid.GetTextExtent('A')
         self.grid.SetColSize(0, 3 * 6 * char_width + 1)
-        self.grid.SetColSize(1, 16 * 2 * char_width + 5)
+        self.grid.SetColSize(1, 32 * char_width + 6)
         self.grid.SetColSize(2, 25 * char_width + 1)
         self.grid.SetColLabelValue(0, parent.reference_label)
         self.grid.DisableDragRowSize()
