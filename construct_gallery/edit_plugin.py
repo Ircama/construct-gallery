@@ -61,14 +61,14 @@ class MultiLineTextEntryDialog(wx.Dialog):
         try:
             self.text_ctrl = wx.TextCtrl(
                 self.panel,
-                size=wx.Size(450, 100),
+                size=wx.Size(-1, 100),
                 style=wx.TE_MULTILINE,
                 value=default_value
             )
         except UnicodeDecodeError:
             self.text_ctrl = wx.TextCtrl(
                 self.panel,
-                size=wx.Size(450, 100),
+                size=wx.Size(-1, 100),
                 style=wx.TE_MULTILINE
             )
         current_font = self.text_ctrl.GetFont()
@@ -98,9 +98,10 @@ class MultiLineTextEntryDialog(wx.Dialog):
             self.panel, wx.ID_CANCEL, label='Cancel'
         )
 
+        char_width, char_height = self.text_ctrl.GetTextExtent('A')
         self.dump = wx.TextCtrl(
             self.panel,
-            size=wx.Size(600, 100),
+            size=wx.Size(char_width * 85, 100),
             style=wx.TE_MULTILINE | wx.TE_READONLY,
             value=""
         )
