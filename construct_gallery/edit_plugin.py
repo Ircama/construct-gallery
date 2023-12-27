@@ -104,7 +104,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
                 + sep
                 + f"{bytes_dump:<52}"
                 + sep
-                + f"{str_dump:<16}\n"
+                + f" {str_dump:<16}\n"
             )
         self.dump.SetValue(text)
 
