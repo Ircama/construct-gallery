@@ -61,7 +61,7 @@ class MultiLineTextEntryDialog(wx.Dialog):
         char_width, char_height = self.text_ctrl.GetTextExtent('A')
         self.dump = wx.TextCtrl(
             self.panel,
-            size=wx.Size(char_width * 90, char_height * 5.5),
+            size=wx.Size(char_width * 90, int(char_height * 5.5)),
             style=wx.TE_MULTILINE | wx.TE_READONLY,
             value=""
         )
