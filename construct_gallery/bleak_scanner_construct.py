@@ -261,10 +261,9 @@ class BleakScannerConstruct(ConstructGallery):
             logging.critical("Critical error: Bluetooth not available. %s", e)
             self.stopButton.Enable(False)
             self.startButton.Enable(True)
-            self.status_message(f"BLE started.")
-            self.status_message(
+            wx.CallLater(700, self.status_message(
                 "Critical error: Bluetooth not available. " + str(e)
-            )
+            ))
         logging.warning("BLE thread stopped.")
 
     # This method must be overridden
