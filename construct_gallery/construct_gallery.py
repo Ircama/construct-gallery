@@ -749,12 +749,27 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.description_label = description_label
         self.added_data_label = added_data_label
         self.loadfile = loadfile
-        self.gallery_descriptor = gallery_descriptor
         self.default_gallery_selection = default_gallery_selection
         self.col_name_width = col_name_width
         self.col_type_width = col_type_width
         self.col_value_width = col_value_width
-        
+        self.control_position = None
+        self.default_gallery_descr = {
+            "Bytes": GalleryItem(
+                construct=cs.GreedyRange(cs.Byte)
+            ),
+            "Characters": GalleryItem(
+                construct=cs.GreedyRange(cs.PaddedString(1, "utf8"))
+            ),
+            "UTF8 String": GalleryItem(
+                construct=cs.GreedyString("utf8")
+            ),
+        }
+        self.gallery_descriptor = (
+            self.default_gallery_descr if gallery_descriptor is None
+            else gallery_descriptor
+        )
+
         c_sep = 2
         if 'wxMSW' in wx.PlatformInfo:
             c_sep = 1
@@ -1104,15 +1119,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     "construct_format": GalleryItem(
                         construct=construct_module.construct_format,
                     ),
-                    "Bytes": GalleryItem(
-                        construct=cs.GreedyRange(cs.Byte)
-                    ),
-                    "Characters": GalleryItem(
-                        construct=cs.GreedyRange(cs.PaddedString(1, "utf8"))
-                    ),
-                    "UTF8 String": GalleryItem(
-                        construct=cs.GreedyString("utf8")
-                    ),
+                    **self.default_gallery_descr
                 }
             else:
                 wx.MessageBox(

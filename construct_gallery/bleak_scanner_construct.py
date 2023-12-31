@@ -127,7 +127,10 @@ class BleakScannerConstruct(ConstructGallery):
         self.stopButton.Bind(wx.EVT_BUTTON, lambda event: self.ble_stop())
         controlSizer.Add(self.stopButton, 1, wx.EXPAND | wx.LEFT, 5)
 
-        self.vsizer.Insert(self.control_position, controlSizer, 0, wx.EXPAND | wx.CENTER)
+        if self.control_position is not None:
+            self.vsizer.Insert(
+                self.control_position, controlSizer, 0, wx.EXPAND | wx.CENTER
+            )
         if logging_plugin:
             self.wx_log_window = WxLogging(self, logging.getLogger())
 

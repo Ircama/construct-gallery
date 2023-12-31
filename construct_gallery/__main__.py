@@ -14,6 +14,7 @@ import construct as cs
 from collections import OrderedDict
 import sys
 import argparse
+import logging
 import importlib.util
 try:
     import bleak.uuids
@@ -21,19 +22,6 @@ try:
 except ImportError:
     class BleakScannerConstruct:
         BLEAK_IS_USED = False  # it means invalid class and black not installed
-
-
-class SDBleakScannerConstruct(BleakScannerConstruct):
-    def bleak_advertising(self, device, advertisement_data):
-        if advertisement_data.service_data:
-            for name, data in advertisement_data.service_data.items():
-                str_name = bleak.uuids.uuidstr_to_str(name)
-                self.add_packet_frame(
-                    data=data,
-                    append_label=str_name,
-                    date_separator=" | ",
-                    reference=device.address,
-                )
 
 
 def config_app(construct_module):
@@ -101,29 +89,59 @@ def config_app(construct_module):
             f'{editing_structure[i]["new_binary"]}')
 
 def bleak_app(construct_module, reference_label, key_label, description_label):
+    class SDBleakScannerConstruct(BleakScannerConstruct):
+        sep = " \u250a "  # thin vertical dotted bar
+
+        def bleak_advertising(self, device, advertisement_data):
+            logging.warning(
+                "mac: %s. adv.data: %s. RSSI: %s",
+                device.address,
+                advertisement_data,
+                advertisement_data.rssi,
+            )
+            local_name = ""
+            if advertisement_data.local_name:
+                local_name += advertisement_data.local_name + self.sep
+            if advertisement_data.service_uuids:
+                for i in advertisement_data.service_uuids:
+                    local_name += bleak.uuids.uuidstr_to_str(i) + self.sep
+            if advertisement_data.manufacturer_data:
+                for id, data in advertisement_data.manufacturer_data.items():
+                    str_name = f"{local_name}Manufacturer {id}"
+                    self.add_packet_frame(
+                        data=data,
+                        append_label=str_name,
+                        date_separator=self.sep,
+                        reference=device.address,
+                    )
+            if advertisement_data.service_data:
+                for name, data in advertisement_data.service_data.items():
+                    str_name = local_name + bleak.uuids.uuidstr_to_str(name)
+                    self.add_packet_frame(
+                        data=data,
+                        append_label=str_name,
+                        date_separator=self.sep,
+                        reference=device.address,
+                    )
+
     app = wx.App(False)
     width, height = wx.GetDisplaySize()
     title = "BleakScannerConstructFrame demo"
     if construct_module:
         title = "BLE Advertising Editor - " + construct_module.__file__
-    else:
-        construct_module = {
-            "Bytestream": GalleryItem(construct=cs.GreedyRange(cs.Byte)),
-            "Bytearray": GalleryItem(construct=cs.GreedyBytes),
-            "UTF8 string": GalleryItem(construct=cs.GreedyString("utf8")),
-        }
     frame = wx.Frame(
         None,
         pos=(int(width * 5 / 100), int(height * 5 / 100)),
         title=title,
-        size=(int(width * 90 / 100), int(height * 90 / 100))
+        size=(int(width * 90 / 100), int(height * 90 / 100)),
     )
     frame.CreateStatusBar()
     main_panel = SDBleakScannerConstruct(
-        frame, gallery_descriptor=construct_module,
-        reference_label=reference_label,
+        frame,
+        gallery_descriptor=construct_module,
+        reference_label=reference_label or "MAC Address",
         key_label=key_label,
-        description_label=description_label
+        description_label=description_label or "Description",
     )
     frame.Bind(wx.EVT_CLOSE, lambda event: on_close(main_panel, event))
     frame.Show(True)
