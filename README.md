@@ -5,9 +5,9 @@
 [![PyPI download month](https://img.shields.io/pypi/dm/construct-gallery.svg)](https://pypi.python.org/pypi/construct-gallery/)
 [![GitHub license](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-blue)](https://raw.githubusercontent.com/ircama/construct-gallery/master/LICENSE)
 
-__wxPython Editor and Widgets extending the functionalities of *construct-editor*__
+__Development and testing tool for construct, including widgets that extend the functionalities of *construct-editor*__
 
-*construct-gallery* is a GUI to interactively test [construct](https://construct.readthedocs.io/en/latest/) data structures, parsing and building sample data which can be catalogued in an editable gallery and also stored in Pickle archives for later re-execution. It also offer widgets that can be integrated in other programs.
+*construct-gallery* is a GUI to interactively develop and test [construct](https://construct.readthedocs.io/en/latest/) data structures, parsing and building sample data which can be catalogued in an editable gallery and also stored in Pickle archives for later re-execution. It also offer widgets that can be integrated in other programs.
 
 The *construct* format shall be developed in a separate Python program through any IDE or editor. While editing and after loading the program to *construct-gallery*, it can be checked and also dyanmically reloaded if modified meawhile.
 
@@ -15,7 +15,7 @@ The *construct* format shall be developed in a separate Python program through a
 
 ## Example of basic usage
 
-Save the following example file to *constr.py*:
+Save the following example file to a file named for instance *constr.py*:
 
 ```python
 from construct import *
@@ -38,9 +38,9 @@ Past the following bytes to the the central hex column of *construct_gallery*:
 14 00 0c
 ```
 
-You can use all available tools to edit digits and test results.
+You can use all available tools to edit digits and test results. Notice the various plugins that enrich the functionalities of *construct-editor*.
 
-Do not close *construct_gallery*. Edit *constr.py* pasting the following code, then save:
+You might not close *construct_gallery* while editing *constr.py*; paste for instance the following code replacing the previous one, then save:
 
 ```python
 from construct import *
@@ -65,11 +65,11 @@ Past the following bytes to the the central hex column of *construct_gallery*:
 02 08 0c 70 08 0d de 08 0e 4c 09 0f ba 09 10
 ```
 
-Notice that, when using [tunnels](https://construct.readthedocs.io/en/latest/api/adapters.html#construct.ExprAdapter), you also need to [declare the adapter](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/core/custom.py#L53) for correct rendering in *construct_editor*:
+Notice that, when using [tunnels](https://construct.readthedocs.io/en/latest/api/adapters.html#construct.ExprAdapter), you also need to [declare the adapter](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/core/custom.py#L53) for correct rendering in *construct_editor*.
 
 ## Advanced usage
 
-Other than the previously described basic sample, *construct_gallery*  offers advanced modes that allow to predefine a gallery of samples with different formats and options.
+Other than the previously described basic sample, *construct_gallery*  offers advanced modes that allow you to predefine a gallery of samples with different formats and options.
 
 Specifically, *construct_gallery* is able to read two kinds of formats inside the Python program:
 
@@ -85,9 +85,11 @@ Specifically, *construct_gallery* is able to read two kinds of formats inside th
   gallery_descriptor = <dictionary or ordered dictionary of GalleryItem elements>
   ```
 
+Notice that *construct_format* and *gallery_descriptor* are default variables which can be changed through the `-f`/`-F` options or via API.
+
 When using the *construct_format* mode, in order to provide basic structures for testing, *construct_gallery* automatically creates *Bytes*, *Characters* and *UTF-8 String* galleries (if you run the previous example, you can see them).
 
-The *gallery_descriptor* mode allows to define custom galleries. To classify the custom gallery elements, *gallery_descriptor* adopts a modified `GalleryItem()` data model initially defined in *construct_editor*, which can be imported with `from construct_gallery import GalleryItem`.
+The *gallery_descriptor* mode allows you to define custom galleries. To classify the custom gallery elements, *gallery_descriptor* adopts an enriched `GalleryItem()` data model [initially defined in *construct_editor*](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/gallery/__init__.py#L7-L10), which can be imported with `from construct_gallery import GalleryItem`.
 
 The *gallery_descriptor* mode can be:
 
@@ -314,29 +316,42 @@ ref_key_descriptor = {
 ## Command-line parameters
 
 ```
-usage: construct_gallery [-h] [-R--reference_label REFERENCE_LABEL] [-K KEY_LABEL] [-D DESCRIPTION_LABEL]
-                         [-g | -b | -c]
+usage: construct_gallery [-h] [-R--reference_label REFERENCE_LABEL] [-K KEY_LABEL] [-D DESCRIPTION_LABEL] [-M] [-m] [-g]
+                         [-F GALLERY_DESCRIPTOR_VAR] [-f CONSTRUCT_FORMAT_VAR] [-b] [-c]
                          [CONSTRUCT_MODULE]
 
 Run as python3 -m construct_gallery ...
 
 positional arguments:
-  CONSTRUCT_MODULE      construct Python module
+  CONSTRUCT_MODULE      construct Python module pathname.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -R--reference_label REFERENCE_LABEL
-                        reference_label string
+                        "reference_label" string.
   -K KEY_LABEL, --key_label KEY_LABEL
-                        key_label string
+                        "key_label" string
   -D DESCRIPTION_LABEL, --description_label DESCRIPTION_LABEL
-                        description_label string
+                        "description_label" string.
+  -M, --not_detect_svc_data
+                        Only used with -b/--bleak option. Do not detect service data with -b option and detect manufacturer data. Default
+                        is to detect service data and not to detect manufacturer data.
+  -m, --detect_manuf_data
+                        Only used with -b/--bleak option. Detect both manufacturer and service data with -b option. Default is not to
+                        detect manufacturer data and only detect service data.
   -g, --gallery         ConstructGallery demo (default)
-  -b, --bleak           BleakScannerConstruct demo
-  -c, --config          ConfigEditorPanel demo
+  -F GALLERY_DESCRIPTOR_VAR, --gallery_descriptor GALLERY_DESCRIPTOR_VAR
+                        Custom "gallery_descriptor" variable name.
+  -f CONSTRUCT_FORMAT_VAR, --construct_format CONSTRUCT_FORMAT_VAR
+                        Custom "construct_format" variable name.
+  -b, --bleak           BleakScannerConstruct test app.
+  -c, --config          ConfigEditorPanel demo.
 
 construct_gallery utility
 ```
+
+Error exit codes:
+3: invalid command line parameter
 
 ## Modules and widgets
 

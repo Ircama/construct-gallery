@@ -731,6 +731,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             ordered_samples=None,
             ref_key_descriptor=None,
             default_gallery_selection=0,
+            gallery_descriptor_var=None,
+            construct_format_var=None,
             col_name_width=None,
             col_type_width=None,
             col_value_width=None,
@@ -750,6 +752,12 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.added_data_label = added_data_label
         self.loadfile = loadfile
         self.default_gallery_selection = default_gallery_selection
+        self.gallery_descriptor_var = (
+            gallery_descriptor_var or "gallery_descriptor"
+        )
+        self.construct_format_var = (
+            construct_format_var or "construct_format"
+        )
         self.col_name_width = col_name_width
         self.col_type_width = col_type_width
         self.col_value_width = col_value_width
@@ -1112,18 +1120,33 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             )
             construct_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(construct_module)
-            if "gallery_descriptor" in dir(construct_module):
-                gallery_descr = construct_module.gallery_descriptor
-            elif "construct_format" in dir(construct_module):
+            gallery_descr = getattr(
+                construct_module, self.gallery_descriptor_var, None
+            )
+            if not gallery_descr:
+                gallery_descr = getattr(
+                    construct_module, self.construct_format_var, None
+                )
+            if gallery_descr:
+                if not issubclass(type(gallery_descr), cs.Construct):
+                    wx.MessageBox(
+                        f"Variable '{self.construct_format_var}' in "
+                        f"'{construct_module.__file__}' "
+                        "is not a 'construct' structure.",
+                        "Cannot load Python module",
+                           wx.ICON_ERROR | wx.CENTRE | wx.OK
+                    )
+                    return False
                 gallery_descr = {
-                    "construct_format": GalleryItem(
-                        construct=construct_module.construct_format,
+                    self.construct_format_var: GalleryItem(
+                        construct=gallery_descr
                     ),
                     **self.default_gallery_descr
                 }
             else:
                 wx.MessageBox(
-                    "Missing 'construct_format' or 'gallery_descriptor' in "
+                    f"Missing '{self.construct_format_var}' or "
+                    f"'{self.gallery_descriptor_var}' in "
                     f"{construct_module.__file__}",
                     "Cannot load Python module",
                        wx.ICON_ERROR | wx.CENTRE | wx.OK

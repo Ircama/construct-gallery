@@ -2,6 +2,7 @@
 # construct_gallery module (main)
 #############################################################################
 
+import re
 import wx
 from pkgutil import iter_modules
 import construct_editor.gallery
@@ -88,11 +89,21 @@ def config_app(construct_module):
         print(f'{i}: {editing_structure[i]["binary"]} --> '
             f'{editing_structure[i]["new_binary"]}')
 
-def bleak_app(construct_module, reference_label, key_label, description_label):
+def bleak_app(construct_module, args):
     class SDBleakScannerConstruct(BleakScannerConstruct):
         sep = " \u250a "  # thin vertical dotted bar
 
         def bleak_advertising(self, device, advertisement_data):
+            def get_uuid(i):
+                uuid = bleak.uuids.uuidstr_to_str(i)
+                if uuid == "Vendor specific":
+                    uuid += " "
+                    try:
+                        uuid += re.findall(r'\d+', i)[0].lstrip('0')
+                    except ValueError:
+                        uuid += i
+                return uuid
+
             logging.warning(
                 "mac: %s. adv.data: %s. RSSI: %s",
                 device.address,
@@ -104,8 +115,10 @@ def bleak_app(construct_module, reference_label, key_label, description_label):
                 local_name += advertisement_data.local_name + self.sep
             if advertisement_data.service_uuids:
                 for i in advertisement_data.service_uuids:
-                    local_name += bleak.uuids.uuidstr_to_str(i) + self.sep
-            if advertisement_data.manufacturer_data:
+                    local_name += get_uuid(i) + self.sep
+            if (
+            args.detect_manuf_data or args.not_detect_svc_data
+            ) and advertisement_data.manufacturer_data:
                 for id, data in advertisement_data.manufacturer_data.items():
                     str_name = f"{local_name}Manufacturer {id}"
                     self.add_packet_frame(
@@ -114,9 +127,9 @@ def bleak_app(construct_module, reference_label, key_label, description_label):
                         date_separator=self.sep,
                         reference=device.address,
                     )
-            if advertisement_data.service_data:
+            if not args.not_detect_svc_data and advertisement_data.service_data:
                 for name, data in advertisement_data.service_data.items():
-                    str_name = local_name + bleak.uuids.uuidstr_to_str(name)
+                    str_name = local_name + get_uuid(name)
                     self.add_packet_frame(
                         data=data,
                         append_label=str_name,
@@ -139,9 +152,11 @@ def bleak_app(construct_module, reference_label, key_label, description_label):
     main_panel = SDBleakScannerConstruct(
         frame,
         gallery_descriptor=construct_module,
-        reference_label=reference_label or "MAC Address",
-        key_label=key_label,
-        description_label=description_label or "Description",
+        reference_label=args.reference_label or "MAC Address",
+        key_label=args.key_label,
+        description_label=args.description_label or "Description",
+        gallery_descriptor_var=args.gallery_descriptor_var,
+        construct_format_var=args.construct_format_var
     )
     frame.Bind(wx.EVT_CLOSE, lambda event: on_close(main_panel, event))
     frame.Show(True)
@@ -151,9 +166,7 @@ def on_close(frame, event):
     frame.on_application_close()
     event.Skip()
 
-def gallery_app(
-        construct_module, reference_label, key_label, description_label
-    ):
+def gallery_app(construct_module, args):
     app = wx.App(False)
     width, height = wx.GetDisplaySize()
     title = "ConstructGalleryFrame demo"
@@ -222,9 +235,11 @@ def gallery_app(
     main_panel = ConstructGallery(
         frame,
         gallery_descriptor=gallery_descriptor,
-        reference_label=reference_label,
-        key_label=key_label,
-        description_label=description_label
+        reference_label=args.reference_label,
+        key_label=args.key_label,
+        description_label=args.description_label,
+        gallery_descriptor_var=args.gallery_descriptor_var,
+        construct_format_var=args.construct_format_var
     )
     frame.Bind(wx.EVT_CLOSE, lambda event: on_close(main_panel, event))
     frame.Show(True)
@@ -242,7 +257,7 @@ def main(run_bleak=False):
     parser.add_argument(
         "construct_module",
         type=argparse.FileType('r'),
-        help="construct Python module",
+        help="construct Python module pathname.",
         default=0,
         nargs='?',
         metavar='CONSTRUCT_MODULE')
@@ -252,7 +267,7 @@ def main(run_bleak=False):
         dest='reference_label',
         action='store',
         type=str,
-        help='reference_label string'
+        help='"reference_label" string.'
     )
     parser.add_argument(
         '-K',
@@ -260,7 +275,7 @@ def main(run_bleak=False):
         dest='key_label',
         action='store',
         type=str,
-        help='key_label string'
+        help='"key_label" string'
     )
     parser.add_argument(
         '-D',
@@ -268,8 +283,29 @@ def main(run_bleak=False):
         dest='description_label',
         action='store',
         type=str,
-        help='description_label string'
+        help='"description_label" string.'
     )
+    if BleakScannerConstruct.BLEAK_IS_USED:
+        parser.add_argument(
+            '-M',
+            "--not_detect_svc_data",
+            dest='not_detect_svc_data',
+            action='store_true',
+            help="Only used with -b/--bleak option. "
+            "Do not detect service data with -b option and detect "
+            "manufacturer data. Default is to detect service data and not to "
+            "detect manufacturer data."
+        )
+        parser.add_argument(
+            '-m',
+            "--detect_manuf_data",
+            dest='detect_manuf_data',
+            action='store_true',
+            help="Only used with -b/--bleak option. "
+            "Detect both manufacturer and service data with -b option. "
+            "Default is not to detect manufacturer data "
+            "and only detect service data."
+        )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         '-g',
@@ -277,20 +313,56 @@ def main(run_bleak=False):
         dest='gallery',
         action='store_true',
         help="ConstructGallery demo (default)")
+    parser.add_argument(
+        '-F',
+        '--gallery_descriptor',
+        dest='gallery_descriptor_var',
+        action='store',
+        type=str,
+        default=None,
+        help='Custom "gallery_descriptor" variable name.'
+    )
+    parser.add_argument(
+        '-f',
+        '--construct_format',
+        dest='construct_format_var',
+        action='store',
+        type=str,
+        default=None,
+        help='Custom "construct_format" variable name.'
+    )
     if BleakScannerConstruct.BLEAK_IS_USED:
         group.add_argument(
             '-b',
             "--bleak",
             dest='bleak',
             action='store_true',
-            help="BleakScannerConstruct demo")
-    group.add_argument(
+            help="BleakScannerConstruct test app.")
+    a = group.add_argument(
         '-c',
         "--config",
         dest='config',
         action='store_true',
-        help="ConfigEditorPanel demo")
+        help="ConfigEditorPanel demo.")
     args = parser.parse_args()
+    if BleakScannerConstruct.BLEAK_IS_USED:
+        if (
+            (args.not_detect_svc_data or args.detect_manuf_data)
+            and not (args.bleak or run_bleak)
+        ):
+            print(
+                "Options -M/--not_detect_svc_data and -m/--detect_manuf_data "
+                "can only be used with the -b/--bleak option."
+            )
+            sys.exit(2)
+    if (
+        args.gallery_descriptor_var or args.construct_format_var
+    ) and not args.construct_module:
+        print(
+            "Missing Python module referred to options "
+            "'--gallery_descriptor'/'--construct_format'."
+        )
+        sys.exit(2)
     construct_module = None
     if args.construct_module:
         spec = importlib.util.spec_from_file_location(
@@ -313,25 +385,11 @@ def main(run_bleak=False):
             sys.exit(2)
 
     if BleakScannerConstruct.BLEAK_IS_USED and (args.bleak or run_bleak):
-        sys.exit(
-            bleak_app(
-                construct_module,
-                args.reference_label,
-                args.key_label,
-                args.description_label
-            )
-        )
+        sys.exit(bleak_app(construct_module, args))
     elif args.config:
         sys.exit(config_app(construct_module))
     else:
-        sys.exit(
-            gallery_app(
-                construct_module,
-                args.reference_label,
-                args.key_label,
-                args.description_label
-            )
-        )
+        sys.exit(gallery_app(construct_module, args))
 
 
 if __name__ == "__main__":
