@@ -7,15 +7,15 @@
 
 __Development and testing tool for construct, including widgets that extend the functionalities of *construct-editor*__
 
-*construct-gallery* is a GUI to interactively develop and test [construct](https://construct.readthedocs.io/en/latest/) data structures, parsing and building sample data which can be catalogued in an editable gallery and also stored in Pickle archives for later re-execution. It also offer widgets that can be integrated in other programs.
+*construct-gallery* is a GUI to interactively develop and test [construct](https://construct.readthedocs.io/en/latest/) data structures, dynamically parsing and building sample data which can be catalogued in an editable gallery and also stored in Pickle archives for later re-execution. It also offer widgets that can be integrated in other programs.
 
-The *construct* format shall be developed in a separate Python program through any IDE or editor. While editing and after loading the program to *construct-gallery*, it can be checked and also dyanmically reloaded if modified meawhile.
+The *construct* format shall be developed in a Python program through any IDE or editor. While editing and after loading the program to *construct-gallery*, it can be checked and also dyanmically reloaded if modified meawhile.
 
 *construct-gallery* is based on [wxPython](https://www.wxpython.org/) and [construct-editor](https://github.com/timrid/construct-editor): specifically, it relies on the excellent editing widgets provided by the *construct-editor* module and offers a superset of features compared with its standard [GUI](https://github.com/timrid/construct-editor/blob/main/construct_editor/main.py).
 
 ## Example of basic usage
 
-Save the following example file to a file named for instance *constr.py*:
+Save the following example program to a file named for instance *constr.py*:
 
 ```python
 from construct import *
@@ -26,21 +26,21 @@ construct_format = Struct(
 )
 ```
 
-Load it with *construct_gallery*:
+Load it with *construct-gallery*:
 
 ```bash
 python3 -m construct_gallery constr.py
 ```
 
-Past the following bytes to the the central hex column of *construct_gallery*:
+Paste the following bytes to the the central hex panel of *construct-gallery*:
 
 ```
 14 00 0c
 ```
 
-You can use all available tools to edit digits and test results. Notice the various plugins that enrich the functionalities of *construct-editor*.
+You can use all available tools of *construct-gallery* to edit digits and test results. Notice the various plugins that enrich the functionalities of *construct-editor*.
 
-You might not close *construct_gallery* while editing *constr.py*; paste for instance the following code replacing the previous one, then save:
+You can keep *construct-gallery* running while editing *constr.py*; paste for instance the following code replacing the previous one, then save:
 
 ```python
 from construct import *
@@ -57,21 +57,25 @@ construct_format = GreedyRange(
 )
 ```
 
-Press "Reload construct module" in *construct_gallery*.
+Press "Reload construct module" in *construct-gallery*. You will see the pdated structure.
 
-Past the following bytes to the the central hex column of *construct_gallery*:
+Past the following bytes to the the central hex panel of *construct-gallery*:
 
 ```
 02 08 0c 70 08 0d de 08 0e 4c 09 0f ba 09 10
 ```
 
+You will see the appropriately parsed data in the right panel of *construct-gallery*.
+
+Select the bytes in the central panel
+
 Notice that, when using [tunnels](https://construct.readthedocs.io/en/latest/api/adapters.html#construct.ExprAdapter), you also need to [declare the adapter](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/core/custom.py#L53) for correct rendering in *construct_editor*.
 
 ## Advanced usage
 
-Other than the previously described basic sample, *construct_gallery*  offers advanced modes that allow you to predefine a gallery of samples with different formats and options.
+Other than the previously described basic sample, *construct-gallery*  offers advanced modes that allow you to predefine a gallery of samples with different formats and options.
 
-Specifically, *construct_gallery* is able to read two kinds of formats inside the Python program:
+Specifically, *construct-gallery* is able to read two kinds of formats inside the Python program:
 
 - a basic format, consisting of a single gallery element (the one previously mentioned):
 
@@ -87,7 +91,7 @@ Specifically, *construct_gallery* is able to read two kinds of formats inside th
 
 Notice that *construct_format* and *gallery_descriptor* are default variables which can be changed through the `-f`/`-F` options or via API.
 
-When using the *construct_format* mode, in order to provide basic structures for testing, *construct_gallery* automatically creates *Bytes*, *Characters* and *UTF-8 String* galleries (if you run the previous example, you can see them).
+When using the *construct_format* mode, in order to provide basic structures for testing, *construct-gallery* automatically creates *Bytes*, *Characters* and *UTF-8 String* galleries (if you run the previous example, you can see them).
 
 The *gallery_descriptor* mode allows you to define custom galleries. To classify the custom gallery elements, *gallery_descriptor* adopts an enriched `GalleryItem()` data model [initially defined in *construct_editor*](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/gallery/__init__.py#L7-L10), which can be imported with `from construct_gallery import GalleryItem`.
 
