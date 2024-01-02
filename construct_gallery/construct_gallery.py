@@ -1127,31 +1127,31 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                 gallery_descr = getattr(
                     construct_module, self.construct_format_var, None
                 )
-            if gallery_descr:
-                if not issubclass(type(gallery_descr), cs.Construct):
+                if gallery_descr:
+                    if not issubclass(type(gallery_descr), cs.Construct):
+                        wx.MessageBox(
+                            f"Variable '{self.construct_format_var}' in "
+                            f"'{construct_module.__file__}' "
+                            "is not a 'construct' structure.",
+                            "Cannot load Python module",
+                               wx.ICON_ERROR | wx.CENTRE | wx.OK
+                        )
+                        return False
+                    gallery_descr = {
+                        self.construct_format_var: GalleryItem(
+                            construct=gallery_descr
+                        ),
+                        **self.default_gallery_descr
+                    }
+                else:
                     wx.MessageBox(
-                        f"Variable '{self.construct_format_var}' in "
-                        f"'{construct_module.__file__}' "
-                        "is not a 'construct' structure.",
+                        f"Missing '{self.construct_format_var}' or "
+                        f"'{self.gallery_descriptor_var}' in "
+                        f"{construct_module.__file__}",
                         "Cannot load Python module",
                            wx.ICON_ERROR | wx.CENTRE | wx.OK
                     )
                     return False
-                gallery_descr = {
-                    self.construct_format_var: GalleryItem(
-                        construct=gallery_descr
-                    ),
-                    **self.default_gallery_descr
-                }
-            else:
-                wx.MessageBox(
-                    f"Missing '{self.construct_format_var}' or "
-                    f"'{self.gallery_descriptor_var}' in "
-                    f"{construct_module.__file__}",
-                    "Cannot load Python module",
-                       wx.ICON_ERROR | wx.CENTRE | wx.OK
-                )
-                return False
             self.gallery_descriptor.gallery_descriptor = gallery_descr
         else:
             gallery_descr = self.gallery_descriptor
@@ -1163,6 +1163,16 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             gallery_descr.keys())[self.gallery_selection]
         GalleryDict.set_fixed_contextkw(
             gallery_descr[default_construct].contextkw)
+        if not issubclass(
+            type(gallery_descr[default_construct].construct), cs.Construct
+        ):
+            wx.LogError(
+                "Item '%s' in '%s' does not define a 'construct' structure." % (
+                    default_construct,
+                    self.gallery_descriptor.__file__
+                )
+            )
+            return False
         self.used_construct = gallery_descr[default_construct].construct
         self.construct_selector_lbx.SetStringSelection(default_construct)
         if self.construct_hex_editor:
@@ -1694,6 +1704,14 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         else:
             gallery_item = self.gallery_descriptor[
                 self.construct_selector_lbx.GetStringSelection()]
+        if not issubclass(type(gallery_item.construct), cs.Construct):
+            wx.LogError(
+                "Item '%s' in '%s' does not define a 'construct' structure." % (
+                    self.construct_selector_lbx.GetStringSelection(),
+                    self.gallery_descriptor.__file__
+                )
+            )
+            return
         GalleryDict.set_fixed_contextkw(gallery_item.contextkw)
         self.used_construct = gallery_item.construct
         self.construct_hex_editor.construct = self.used_construct
