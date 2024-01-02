@@ -4,10 +4,7 @@
 # construct_gallery module
 #############################################################################
 
-import wx
-import wx.grid
-import construct_editor.wx_widgets.wx_hex_editor
-from construct_editor.wx_widgets import WxConstructHexEditor
+# Base modules
 import importlib.util
 from datetime import datetime, timezone
 import pickle
@@ -17,21 +14,32 @@ import sys
 import typing as t
 from types import TracebackType, ModuleType
 import os
+import re
+import dataclasses
+import time
+
+# wx module
+import wx
+import wx.grid
 import wx.lib.dialogs
-from . import allow_python_expr_plugin
-from . import decimal_convert_plugin
-from . import string_convert_plugin
-from . import edit_plugin
+
+# construct module
+import construct as cs
+
+# construct_editor module
+import construct_editor.wx_widgets.wx_hex_editor as wx_hex_editor
+from construct_editor.wx_widgets import WxConstructHexEditor
 from construct_editor.wx_widgets.wx_exception_dialog import (
     ExceptionInfo,
     WxExceptionDialog,
 )
-from construct_editor.wx_widgets.wx_hex_editor import ContextMenuItem
+
+# construct_gallery module
 from .pyshell_plugin import PyShellPlugin
-import re
-import dataclasses
-import construct as cs
-import time
+from . import allow_python_expr_plugin
+from . import decimal_convert_plugin
+from . import string_convert_plugin
+from . import edit_plugin
 
 
 @dataclasses.dataclass
@@ -53,13 +61,13 @@ class HexEditorGrid(  # add plugins to HexEditorGrid
         edit_plugin.HexEditorGrid,
         decimal_convert_plugin.HexEditorGrid,
         allow_python_expr_plugin.HexEditorGrid,
-        construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid):
+        wx_hex_editor.HexEditorGrid):
     def build_context_menu(self):
         menus = super().build_context_menu()
         menus.insert(-5, None)  # add an horizontal line before the two plugins
 
         menus.append(
-            ContextMenuItem(
+            wx_hex_editor.ContextMenuItem(
                 wx_id=wx.ID_ANY,
                 name="Add hex Element Data to the Gallery",
                 callback=lambda event: self.cg.add_selection(),
@@ -718,26 +726,31 @@ class EditableGrid(wx.grid.Grid):
 
 
 class ConstructGallery(wx.Panel, PyShellPlugin):
-    def __init__(self,
-            parent,
-            load_menu_label="Gallery Data",
-            clear_label="Gallery",
-            reference_label=None,
-            key_label=None,
-            description_label=None,
-            added_data_label="",
-            loadfile=None,
-            gallery_descriptor=None,
-            ordered_samples=None,
-            ref_key_descriptor=None,
-            default_gallery_selection=0,
-            gallery_descriptor_var=None,
-            construct_format_var=None,
-            col_name_width=None,
-            col_type_width=None,
-            col_value_width=None,
-            run_shell_plugin=True,
-            run_hex_editor_plugins=True):
+    GALLERY_DESCRIPTOR = "gallery_descriptor"
+    CONSTRUCT_FORMAT = "construct_format"
+
+    def __init__(
+        self,
+        parent,
+        load_menu_label="Gallery Data",
+        clear_label="Gallery",
+        reference_label=None,
+        key_label=None,
+        description_label=None,
+        added_data_label="",
+        loadfile=None,
+        gallery_descriptor=None,
+        ordered_samples=None,
+        ref_key_descriptor=None,
+        default_gallery_selection=0,
+        gallery_descriptor_var=None,
+        construct_format_var=None,
+        col_name_width=None,
+        col_type_width=None,
+        col_value_width=None,
+        run_shell_plugin=True,
+        run_hex_editor_plugins=True
+    ):
         super().__init__(parent)
 
         # show uncatched exceptions in a dialog...
@@ -753,10 +766,10 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.loadfile = loadfile
         self.default_gallery_selection = default_gallery_selection
         self.gallery_descriptor_var = (
-            gallery_descriptor_var or "gallery_descriptor"
+            gallery_descriptor_var or self.GALLERY_DESCRIPTOR
         )
         self.construct_format_var = (
-            construct_format_var or "construct_format"
+            construct_format_var or self.CONSTRUCT_FORMAT
         )
         self.col_name_width = col_name_width
         self.col_type_width = col_type_width
@@ -970,7 +983,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         # monkey-patch HexEditorGrid
         HexEditorGrid.cg = self
         if run_hex_editor_plugins:
-            construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid = (
+            wx_hex_editor.HexEditorGrid = (
                 HexEditorGrid
             )
 
@@ -1775,46 +1788,46 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
 
     def build_list_context_menu(
         self, obj
-    ) -> t.List[t.Optional[ContextMenuItem]]:
+    ) -> t.List[t.Optional[wx_hex_editor.ContextMenuItem]]:
         """Build the context menu. Can be overridden."""
 
         menu_list = [
-            ContextMenuItem(
+            wx_hex_editor.ContextMenuItem(
                 wx.ID_ANY,
                 "Rename\tF2",
                 lambda event: self.change_selection(),
                 None,
                 True,
             ),
-            ContextMenuItem(
+            wx_hex_editor.ContextMenuItem(
                 wx.ID_ANY,
                 "Duplicate below\tF3",
                 lambda event: self.duplicate_selection(),
                 None,
                 True,
             ),
-            ContextMenuItem(
+            wx_hex_editor.ContextMenuItem(
                 wx.ID_ANY,
                 "Add at the bottom\tF4",
                 lambda event: self.add_selection(),
                 None,
                 True,
             ),
-            ContextMenuItem(
+            wx_hex_editor.ContextMenuItem(
                 wx.ID_ANY,
                 "Delete\tDEL",
                 lambda event: self.delete_selection(obj),
                 None,
                 True,
             ),
-            ContextMenuItem(
+            wx_hex_editor.ContextMenuItem(
                 wx.ID_ANY,
                 "Move up\tF5",
                 lambda event: self.move_selection_up(),
                 None,
                 True,
             ),
-            ContextMenuItem(
+            wx_hex_editor.ContextMenuItem(
                 wx.ID_ANY,
                 "Move down\tF6",
                 lambda event: self.move_selection_down(),
@@ -1825,7 +1838,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         if self.reference_label or self.key_label or self.description_label:
             menu_list += [None]
         if self.reference_label:
-            menu_list += [ContextMenuItem(
+            menu_list += [wx_hex_editor.ContextMenuItem(
                 wx.ID_ANY,
                 "Change " + self.reference_label + "\tF7",
                 lambda event: self.change_reference_selection(),
@@ -1833,7 +1846,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                 True,
             )]
         if self.key_label:
-            menu_list += [ContextMenuItem(
+            menu_list += [wx_hex_editor.ContextMenuItem(
                 wx.ID_ANY,
                 "Change " + self.key_label + "\tF8",
                 lambda event: self.change_key_selection(),
@@ -1841,7 +1854,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                 True,
             )]
         if self.description_label:
-            menu_list += [ContextMenuItem(
+            menu_list += [wx_hex_editor.ContextMenuItem(
                 wx.ID_ANY,
                 "Change " + self.description_label + "\tF9",
                 lambda event: self.change_description_selection(),
