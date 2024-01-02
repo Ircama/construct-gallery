@@ -761,7 +761,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             "Characters": GalleryItem(
                 construct=cs.GreedyRange(cs.PaddedString(1, "utf8"))
             ),
-            "UTF8 String": GalleryItem(
+            "UTF-8 String": GalleryItem(
                 construct=cs.GreedyString("utf8")
             ),
         }

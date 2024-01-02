@@ -5,7 +5,340 @@
 [![PyPI download month](https://img.shields.io/pypi/dm/construct-gallery.svg)](https://pypi.python.org/pypi/construct-gallery/)
 [![GitHub license](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-blue)](https://raw.githubusercontent.com/ircama/construct-gallery/master/LICENSE)
 
-__wxPython Widgets extending functionalities of *construct-editor*__
+__wxPython Editor and Widgets extending the functionalities of *construct-editor*__
+
+*construct-gallery* is a GUI to interactively test [construct](https://construct.readthedocs.io/en/latest/) data structures, parsing and building sample data which can be catalogued in an editable gallery and also stored in Pickle archives for later re-execution. It also offer widgets that can be integrated in other programs.
+
+The *construct* format shall be developed in a separate Python program through any IDE or editor. While editing and after loading the program to *construct-gallery*, it can be checked and also dyanmically reloaded if modified meawhile.
+
+*construct-gallery* is based on [wxPython](https://www.wxpython.org/) and [construct-editor](https://github.com/timrid/construct-editor): specifically, it relies on the excellent editing widgets provided by the *construct-editor* module and offers a superset of features compared with its standard [GUI](https://github.com/timrid/construct-editor/blob/main/construct_editor/main.py).
+
+## Example of basic usage
+
+Save the following example file to *constr.py*:
+
+```python
+from construct import *
+
+construct_format = Struct(
+    "temperature" / Int16sl,
+    "counter" / Int8ul
+)
+```
+
+Load it with *construct_gallery*:
+
+```bash
+python3 -m construct_gallery constr.py
+```
+
+Past the following bytes to the the central hex column of *construct_gallery*:
+
+```
+14 00 0c
+```
+
+You can use all available tools to edit digits and test results.
+
+Do not close *construct_gallery*. Edit *constr.py* pasting the following code, then save:
+
+```python
+from construct import *
+import construct_editor.core.custom as custom
+
+custom.add_custom_adapter(ExprAdapter, "Int16ul_x100", custom.AdapterObjEditorType.String)
+Int16ul_x100 = ExprAdapter(Int16ul, obj_ / 100, lambda obj, ctx: int(float(obj) * 100))
+
+construct_format = GreedyRange(
+    Struct(
+        "temperature" / Int16ul_x100,
+        "counter" / Int8ul,
+    )
+)
+```
+
+Press "Reload construct module" in *construct_gallery*.
+
+Past the following bytes to the the central hex column of *construct_gallery*:
+
+```
+02 08 0c 70 08 0d de 08 0e 4c 09 0f ba 09 10
+```
+
+Notice that, when using [tunnels](https://construct.readthedocs.io/en/latest/api/adapters.html#construct.ExprAdapter), you also need to [declare the adapter](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/core/custom.py#L53) for correct rendering in *construct_editor*:
+
+## Advanced usage
+
+Other than the previously described basic sample, *construct_gallery*  offers advanced modes that allow to predefine a gallery of samples with different formats and options.
+
+Specifically, *construct_gallery* is able to read two kinds of formats inside the Python program:
+
+- a basic format, consisting of a single gallery element (the one previously mentioned):
+
+  ```
+  construct_format = <Construct structure>
+  ```
+
+- and a gallery of multiple elements:
+
+  ```
+  gallery_descriptor = <dictionary or ordered dictionary of GalleryItem elements>
+  ```
+
+When using the *construct_format* mode, in order to provide basic structures for testing, *construct_gallery* automatically creates *Bytes*, *Characters* and *UTF-8 String* galleries (if you run the previous example, you can see them).
+
+The *gallery_descriptor* mode allows to define custom galleries. To classify the custom gallery elements, *gallery_descriptor* adopts a modified `GalleryItem()` data model initially defined in *construct_editor*, which can be imported with `from construct_gallery import GalleryItem`.
+
+The *gallery_descriptor* mode can be:
+
+- a dictionary of `"item name": GalleryItem()`. Example:
+
+    ```python
+    from construct import *
+    from construct_gallery import GalleryItem
+
+    gallery_descriptor = {
+        "Item 1": GalleryItem(
+        ...
+        ),
+        "Item 2": GalleryItem(
+        ...
+        )
+    }
+    ```
+
+- an ordered dictionary of `"item name": GalleryItem()`. Example:
+
+    ```python
+    from construct import *
+    from construct_gallery import GalleryItem
+    from collections import OrderedDict
+
+    gallery_descriptor = (
+        OrderedDict(
+            [
+                (
+                    "Item 1",
+                    GalleryItem(
+                        ...
+                    ),
+                ),
+                (
+                    "Item 2",
+                    GalleryItem(
+                        ...
+                    ),
+                ),
+            ]
+        )
+    )
+    ```
+
+*GalleryItem* data model:
+
+```python
+@dataclasses.dataclass
+class GalleryItem:
+    construct: "cs.Construct[t.Any, t.Any]"
+    clear_log: bool = False
+    contextkw: t.Dict[str, t.Any] = dataclasses.field(default_factory=dict)
+    example_bytes: t.OrderedDict[str, bytes] = dataclasses.field(default_factory=dict)
+    example_dict: t.OrderedDict[str, dict] = dataclasses.field(default_factory=dict)
+    example_key: t.Dict[str, dict] = dataclasses.field(default_factory=dict)
+```
+
+The following elements describe the usage of the *GalleryItem* data class.
+
+- The `construct` parameter is mandatory and must refer a `construct` definition.
+- the `clear_log` parameter is optional: when set to `True`, all related samples are deleted each time a `construct` is changed in the gallery through the GUI; otherwise, new samples are added at the bottom of the sample list.
+- `contextkw` is a dictionary of *key:value* pairs of items to be passed to `construct` as arguments.
+
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Samples can be either described as `example_bytes` (an ordered dictionary of "sample": bytes), or `example_dict` (an ordered dictionary of "sample":bytes ("binary") and *reference* ("reference"), like in the sample) and `example_key` is a dictionary of *"reference": { key, description }*.
+
+The actual name of "reference" is determined by the `reference_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Example, if `reference_label="MAC address"`, then the reference will be `"mac_address"`.
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+Example of *GalleryItem* using `example_bytes` samples in basic and then ordered dictionary formats:
+
+```python
+import construct as cs
+from construct_gallery import GalleryItem
+
+GalleryItem(
+    construct=cs.Struct(
+        "Int16ub" / cs.Int16ub,
+        "Int8ub" / cs.Int8ub
+    ),
+    clear_log=True,
+    example_bytes={  # dictionary format
+        "A number": bytes.fromhex("04 d2 7b"),
+        "All 1": bytes.fromhex("00 01 01"),
+        "All 0": bytes(2 + 1),
+    },
+)
+```
+
+Example of ordered dictionary:
+
+```python
+from collections import OrderedDict
+
+example_dict=OrderedDict(
+    [
+        (
+            "item 1",
+            {
+                "binary": bytes.fromhex("12 16"),
+                "mac_address": "A4:C1:38:AA:BB:EE",
+            },
+        ),
+        (
+            "item 2",
+            {
+                "binary": bytes.fromhex("0e 16"),
+                "mac_address": "A4:C1:38:AA:BB:EE",
+            },
+        ),
+    ]
+),
+```
+
+Using the previously described *constr.py* example to test the *gallery_descriptor* format, paste the following code, then save:
+
+```python
+from collections import OrderedDict
+from construct import *
+import construct_editor.core.custom as custom
+from construct_gallery import GalleryItem
+
+custom.add_custom_adapter(ExprAdapter, "Int16ul_x100", custom.AdapterObjEditorType.String)
+Int16ul_x100 = ExprAdapter(Int16ul, obj_ / 100, lambda obj, ctx: int(float(obj) * 100))
+
+gallery_descriptor = {
+    "Basic example": GalleryItem(
+        construct=Struct(
+            "temperature" / Int16sl,
+            "counter" / Int8ul
+        ),
+        clear_log=True,
+        example_bytes={
+            'Numbers 20 and 12': bytes.fromhex("14 00 0c"),
+            'Numbers 21 and 13': bytes.fromhex("15 00 0d"),
+        }
+    ),
+    "More complex example": GalleryItem(
+        construct=GreedyRange(
+            Struct(
+                "temperature" / Int16ul_x100,
+                "counter" / Int8ul,
+            )
+        ),
+        clear_log=True,
+        example_bytes=OrderedDict(  # OrderedDict format
+            [
+                ('Ten numbers', bytes.fromhex(
+                    "02 08 0c 70 08 0d de 08 0e 4c 09 0f ba 09 10")),
+                ('All 1', bytes.fromhex(
+                    "64 00 01 64 00 01 64 00 01 64 00 00 64 00 01")),
+                ('All 0', bytes(8 + 4 + 2 + 1)),
+            ]
+        )
+    ),
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+In `example_key`, the actual name of "key" is determined by the `key_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Example, if `key_label="Bindkey"`, then the key will be `"bindkey"`. Same for the *description label (ref. `description_label`). Example:
+
+```python
+example_key={
+    "A4:C1:38:AA:BB:EE": {
+        "bindkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "description": "test A",
+    },
+    "A4:C1:38:AA:BB:CC": {
+        "bindkey": "cccccccccccccccccccccccccccccccc",
+        "description": "test B",
+    }
+}
+```
+
+Example of `ref_key_descriptor`:
+
+```python
+ref_key_descriptor = {
+    "A4:C1:38:AA:BB:CC": {"bindkey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    "A4:C1:38:AA:BB:DD": {"bindkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    "A4:C1:38:AA:BB:EE": {"bindkey": "cccccccccccccccccccccccccccccccc"}
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Command-line parameters
+
+```
+usage: construct_gallery [-h] [-R--reference_label REFERENCE_LABEL] [-K KEY_LABEL] [-D DESCRIPTION_LABEL]
+                         [-g | -b | -c]
+                         [CONSTRUCT_MODULE]
+
+Run as python3 -m construct_gallery ...
+
+positional arguments:
+  CONSTRUCT_MODULE      construct Python module
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -R--reference_label REFERENCE_LABEL
+                        reference_label string
+  -K KEY_LABEL, --key_label KEY_LABEL
+                        key_label string
+  -D DESCRIPTION_LABEL, --description_label DESCRIPTION_LABEL
+                        description_label string
+  -g, --gallery         ConstructGallery demo (default)
+  -b, --bleak           BleakScannerConstruct demo
+  -c, --config          ConfigEditorPanel demo
+
+construct_gallery utility
+```
+
+## Modules and widgets
 
 The following Python modules are included:
 
@@ -158,155 +491,9 @@ cg = ConstructGallery(
 ...
 ```
 
-*gallery_descriptor* is required and can be:
-
-- a dictionary of `"item name": GalleryItem()`. Example:
-
-    ```python
-    gallery_descriptor = {
-        "Item 1": GalleryItem(
-        ...
-        ),
-        "Item 2": GalleryItem(
-        ...
-        )
-    }
-    ```
-
-- an ordered dictionary of `"item name": GalleryItem()`. Example:
-
-    ```python
-    gallery_descriptor = (
-        OrderedDict(
-            [
-                (
-                    "Item 1",
-                    GalleryItem(
-                        ...
-                    ),
-                ),
-                (
-                    "Item 2",
-                    GalleryItem(
-                        ...
-                    ),
-                ),
-            ]
-        )
-    )
-    ```
-
 - a dynamically reloadable module, including the *gallery_descriptor* dictionary (module name without ".py").
 
 If a module is used, the button "Reload construct module" appears, to enable the dynamic reloading of the module.
-
-`GalleryItem()` data model:
-
-```python
-@dataclasses.dataclass
-class GalleryItem:
-    construct: "cs.Construct[t.Any, t.Any]"
-    clear_log: bool = False
-    contextkw: t.Dict[str, t.Any] = dataclasses.field(default_factory=dict)
-    example_bytes: t.OrderedDict[str, bytes] = dataclasses.field(default_factory=dict)
-    example_dict: t.OrderedDict[str, dict] = dataclasses.field(default_factory=dict)
-    example_key: t.Dict[str, dict] = dataclasses.field(default_factory=dict)
-```
-
-Example:
-
-```python
-GalleryItem(
-    construct=cs.Struct(
-        "Int16ub" / cs.Int16ub,
-        "Int8ub" / cs.Int8ub
-    ),
-    clear_log=True,
-    example_bytes={  # dictionary format
-        "A number": bytes.fromhex("04 d2 7b"),
-        "All 1": bytes.fromhex("00 01 01"),
-        "All 0": bytes(2 + 1),
-    },
-)
-```
-
-- the `construct` parameter is mandatory and must refer a `construct` definition.
-- the `clear_log` parameter is optional; when set to `True`, all related samples are deleted each time a `construct` is changed in the gallery through the GUI. Otherwise, new samples are added at the bottom of the sample list.
-- `contextkw` is a dictionary of key:value pairs of items to be passed to `construct` as arguments.
-- `example_key` is a dictionary of "reference": { key, description }.
-- `ordered_samples`: `OrderedDict` of samples valid for all construct gallery elements, so independent from specific elements in the *gallery_descriptor*. Notice that, if a reference is used, *mac_address*, *reference_label* and *key_label* must be set in *ConstructGallery*.
-- `ref_key_descriptor`: dictionary of key and descriptor for each reference. This is valid for all construct gallery elements.
-
-Samples can be either described as `example_bytes` (a dictionary of "sample": bytes), or `example_dict` (an ordered dictionary of "sample":bytes ("binary") and *reference* ("reference"), like in the sample). The actual name of "reference" is determined by the `reference_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Example, if `reference_label="MAC address"`, then the reference will be `"mac_address"`.
-
-```python
-example_dict=OrderedDict(
-    [
-        (
-            "item 1",
-            {
-                "binary": bytes.fromhex("12 16"),
-                "mac_address": "A4:C1:38:AA:BB:EE",
-            },
-        ),
-        (
-            "item 2",
-            {
-                "binary": bytes.fromhex("0e 16"),
-                "mac_address": "A4:C1:38:AA:BB:EE",
-            },
-        ),
-    ]
-),
-```
-
-In `example_key`, the actual name of "key" is determined by the `key_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Example, if `key_label="Bindkey"`, then the key will be `"bindkey"`. Same for the *description label (ref. `description_label`). Example:
-
-```python
-example_key={
-    "A4:C1:38:AA:BB:EE": {
-        "bindkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        "description": "test A",
-    },
-    "A4:C1:38:AA:BB:CC": {
-        "bindkey": "cccccccccccccccccccccccccccccccc",
-        "description": "test B",
-    }
-}
-```
-
-Example of `ordered_samples`:
-
-```python
-ordered_samples = OrderedDict(
-    [
-        (
-            "custom",
-            {
-                "binary": bytes.fromhex("12 16"),
-                "mac_address": "A4:C1:38:AA:BB:CC",
-            },
-        ),
-        (
-            "custom_enc",
-            {
-                "binary": bytes.fromhex("0e 16"),
-                "mac_address": "A4:C1:38:AA:BB:CC",
-            },
-        ),
-    ]
-)
-```
-
-Example of `ref_key_descriptor`:
-
-```python
-ref_key_descriptor = {
-    "A4:C1:38:AA:BB:CC": {"bindkey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
-    "A4:C1:38:AA:BB:DD": {"bindkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-    "A4:C1:38:AA:BB:EE": {"bindkey": "cccccccccccccccccccccccccccccccc"}
-}
-```
 
 A table (activated through a buttomn) allows editing MAC addresses and their related Bindkey and description.
 
@@ -760,3 +947,16 @@ Preview of a sample usage of *construct_gallery* with all plugins:
 Preview of a sample usage of *ConfigEditorPanel*:
 
 ![Preview of a sample usage of ConfigEditorPanel](https://github.com/pvvx/ATC_MiThermometer/raw/master/python-interface/images/atc_mi_config.gif)
+
+
+
+
+
+
+
+
+
+
+
+- `ordered_samples`: `OrderedDict` of samples valid for all construct gallery elements, so independent from specific elements in the *gallery_descriptor*. Notice that, if a reference is used, *reference_label*, *key_label* and *description_label* must be set in *ConstructGallery*.
+- `ref_key_descriptor`: dictionary of key and descriptor for each reference. This is valid for all construct gallery elements.
