@@ -28,7 +28,9 @@ class WxLogging():
 
     def wx_log_handler(self, log_msg):
         if not self.log:
-            self.log = wx.LogWindow(self.frame, "Debug Window", True, False)
+            self.log = wx.LogWindow(
+                self.frame, "Debug Window", show=False, passToOld=False
+            )
             self.log.Frame.Lower()
 
             m = self.log.GetFrame().GetMenuBar()

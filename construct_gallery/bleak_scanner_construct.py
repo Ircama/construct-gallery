@@ -173,9 +173,9 @@ class BleakScannerConstruct(ConstructGallery):
         self.bluetooth_thread.start()
         self.startButton.Enable(False)
         self.stopButton.Enable(True)
-        self.wx_log_window.log_window.Show()
+        self.wx_log_window.log_window.Frame.Iconize(True)
+        self.wx_log_window.log_window.Show(True)
         wx.CallLater(500, self.status_message, f"BLE started.")
-        wx.CallLater(1000, self.GetTopLevelParent().Raise)
 
     def ble_stop(self):
         if (not self.bluetooth_thread or
