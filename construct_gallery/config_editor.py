@@ -17,7 +17,7 @@ class ConfigEditorPanel(scrolled.ScrolledPanel):
     def __init__(
             self,
             parent,
-            editing_structure={},
+            editing_structure=None,
             name_size=None,
             type_size=None,
             value_size=None,
@@ -31,7 +31,7 @@ class ConfigEditorPanel(scrolled.ScrolledPanel):
         vsizer = wx.BoxSizer(wx.VERTICAL)
 
         self.editor_panel = {}
-        for i in editing_structure:
+        for i in editing_structure or {}:
             item = editing_structure[i]
             if not {
                 "name",
@@ -90,7 +90,11 @@ class ConfigEditorPanel(scrolled.ScrolledPanel):
                 text_readonly.Wrap(text_label_size)
                 text_readonly.SetForegroundColour(wx.Colour(9, 90, 20))
             hsizer.Add(
-                text_sizer, proportion=0, flag=wx.EXPAND|wx.ALL, border=0)
+                text_sizer,
+                proportion=0,
+                flag=wx.EXPAND | wx.ALL,
+                border=0
+            )
 
             # Construct Editor
             self.editor_panel[i] = WxConstructHexEditor(
@@ -111,9 +115,9 @@ class ConfigEditorPanel(scrolled.ScrolledPanel):
             self.editor_panel[i].toggle_hex_visibility()
             ce.expand_all()
             self.editor_panel[i].SetMinSize((-1, item["size"]))
-            hsizer.Add(self.editor_panel[i], 1, wx.EXPAND|wx.ALL, 5)
+            hsizer.Add(self.editor_panel[i], 1, wx.EXPAND | wx.ALL, 5)
 
-            vsizer.Add(hsizer, 0, wx.EXPAND|wx.ALL, 5)
+            vsizer.Add(hsizer, 0, wx.EXPAND | wx.ALL, 5)
             vsizer.Add(
                 wx.StaticLine(self, style=wx.LI_HORIZONTAL),
                 0,

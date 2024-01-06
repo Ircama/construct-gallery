@@ -3,7 +3,7 @@ import os
 from wx.py.shell import ShellFrame
 
 
-class PyShellPlugin():
+class PyShellPlugin:
     def py_shell(self, vsizer):
         self.pyshell = None
         self.pyshell_help = None
@@ -119,8 +119,8 @@ frame.GetStatusBar().GetStatusText()
         if self.pyshell:
             self.pyshell.Raise()
             return
-        confDir = wx.StandardPaths.Get().GetUserDataDir()
-        os.makedirs(confDir, exist_ok=True)
+        conf_dir = wx.StandardPaths.Get().GetUserDataDir()
+        os.makedirs(conf_dir, exist_ok=True)
         self.config = wx.FileConfig()
         main_locals = {
             **globals(), **locals(),
@@ -142,7 +142,7 @@ frame.GetStatusBar().GetStatusText()
         self.pyshell = ShellFrame(
             config=self.config,
             title="Packet Log Inspector Shell",
-            dataDir=confDir,
+            dataDir=conf_dir,
             locals=main_locals)
 
         ID_LI_HELP = wx.NewIdRef()

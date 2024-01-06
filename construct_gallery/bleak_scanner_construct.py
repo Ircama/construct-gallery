@@ -36,29 +36,29 @@ class FilterEntryDialog(wx.Dialog):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         box = wx.BoxSizer(wx.HORIZONTAL)
-        mac_text = wx.StaticText(self, -1, mac_title, size=(230,-1))
-        box.Add(mac_text, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        mac_input = wx.TextCtrl(self, -1, mac_default_value, size=(200,-1))
+        mac_text = wx.StaticText(self, -1, mac_title, size=(230, -1))
+        box.Add(mac_text, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
+        mac_input = wx.TextCtrl(self, -1, mac_default_value, size=(200, -1))
         if filter_hint_mac:
             mac_input.SetHint(filter_hint_mac)
-        box.Add(mac_input, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
-        sizer.Add(box, 0, wx.GROW|wx.ALL, 5)
+        box.Add(mac_input, 1, wx.ALIGN_CENTRE | wx.ALL, 5)
+        sizer.Add(box, 0, wx.GROW | wx.ALL, 5)
 
         box = wx.BoxSizer(wx.HORIZONTAL)
-        name_text = wx.StaticText(self, -1, name_title, size=(230,-1))
-        box.Add(name_text, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        name_input = wx.TextCtrl(self, -1, name_default_value, size=(200,-1))
+        name_text = wx.StaticText(self, -1, name_title, size=(230, -1))
+        box.Add(name_text, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
+        name_input = wx.TextCtrl(self, -1, name_default_value, size=(200, -1))
         if filter_hint_name:
             name_input.SetHint(filter_hint_name)
-        box.Add(name_input, 1, wx.ALIGN_CENTRE|wx.ALL, 5)
+        box.Add(name_input, 1, wx.ALIGN_CENTRE | wx.ALL, 5)
         buttons = self.CreateButtonSizer(button_style)
-        sizer.Add(box, 0, wx.GROW|wx.ALL, 5)
+        sizer.Add(box, 0, wx.GROW | wx.ALL, 5)
 
         label = wx.StaticText(
             self, -1, "Multiple elements are allowed (separated by comma).")
-        sizer.Add(label, 0, wx.ALIGN_RIGHT|wx.ALL, 15)
+        sizer.Add(label, 0, wx.ALIGN_RIGHT | wx.ALL, 15)
 
-        sizer.Add(buttons, 0, wx.EXPAND|wx.ALL, 5)
+        sizer.Add(buttons, 0, wx.EXPAND | wx.ALL, 5)
         self.SetSizerAndFit(sizer)
         self.mac_input = mac_input
         self.name_input = name_input
@@ -95,7 +95,7 @@ class BleakScannerConstruct(ConstructGallery):
             added_data_label="Logging data",
             logging_plugin=True,
             auto_ble_start=False,
-            bleak_scanner_kwargs={},
+            bleak_scanner_kwargs=None,
             **kwargs):
         super().__init__(
             *args,
@@ -106,30 +106,33 @@ class BleakScannerConstruct(ConstructGallery):
             **kwargs)
         self.filter_hint_mac = filter_hint_mac
         self.filter_hint_name = filter_hint_name
+        bleak_scanner_kwargs = (
+            bleak_scanner_kwargs if bleak_scanner_kwargs else {}
+        )
         self.bleak_scanner_kwargs = bleak_scanner_kwargs
 
         # Start and stop buttons
-        controlSizer = wx.StaticBoxSizer(
+        control_sizer = wx.StaticBoxSizer(
             wx.HORIZONTAL,
             self,
             label="BLE control")
 
         self.startButton = wx.Button(self, wx.ID_ANY, label="Start")
         self.startButton.Bind(wx.EVT_BUTTON, lambda event: self.ble_start())
-        controlSizer.Add(self.startButton, 1, wx.EXPAND | wx.RIGHT, 5)
+        control_sizer.Add(self.startButton, 1, wx.EXPAND | wx.RIGHT, 5)
 
         self.filterButton = wx.Button(self, wx.ID_ANY, label="Filter")
         self.filterButton.Bind(wx.EVT_BUTTON, self.on_filter)
-        controlSizer.Add(self.filterButton, 1, wx.EXPAND | wx.CENTER, 5)
+        control_sizer.Add(self.filterButton, 1, wx.EXPAND | wx.CENTER, 5)
 
         self.stopButton = wx.Button(self, wx.ID_ANY, label="Stop")
         self.stopButton.Enable(False)
         self.stopButton.Bind(wx.EVT_BUTTON, lambda event: self.ble_stop())
-        controlSizer.Add(self.stopButton, 1, wx.EXPAND | wx.LEFT, 5)
+        control_sizer.Add(self.stopButton, 1, wx.EXPAND | wx.LEFT, 5)
 
         if self.control_position is not None:
             self.vsizer.Insert(
-                self.control_position, controlSizer, 0, wx.EXPAND | wx.CENTER
+                self.control_position, control_sizer, 0, wx.EXPAND | wx.CENTER
             )
         if logging_plugin:
             self.wx_log_window = WxLogging(self, logging.getLogger())
@@ -152,7 +155,7 @@ class BleakScannerConstruct(ConstructGallery):
             'Enter a local name or its initial portion:',
             self.filter_name,
             self.filter_hint_name,
-            button_style=wx.OK|wx.CANCEL)
+            button_style=wx.OK | wx.CANCEL)
         if dlg.ShowModal() == wx.ID_OK:
             mac = dlg.GetMacValue()
             name = dlg.GetNameValue()
@@ -202,6 +205,7 @@ class BleakScannerConstruct(ConstructGallery):
 
         def detection_callback(device, advertisement_data):
             found = False
+            i = None
             for i in re.split('; |, ', self.filter_mac):
                 if i and device.address.upper().startswith(i.upper()):
                     found = True

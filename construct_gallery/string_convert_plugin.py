@@ -2,8 +2,6 @@
 
 import wx
 from construct_editor.wx_widgets.wx_hex_editor import ContextMenuItem
-import construct
-import re
 
 
 class HexDump:
@@ -14,7 +12,7 @@ class HexDump:
     def __iter__(self):
         last_bs, last_line = None, None
         for i in range(0, len(self.buf), 16):
-            bs = bytearray(self.buf[i : i + 16])
+            bs = bytearray(self.buf[i: i + 16])
             addr = "{:08x}".format(self.off + i)
             line = "  {:23}  {:23}  ".format(
                 " ".join(("{:02x}".format(x) for x in bs[:8])),
@@ -57,10 +55,10 @@ class StringConvertDialog(wx.Dialog):
         text_right = wx.StaticText(self, -1, right_label)
         text_right.SetFont(self.font)
         text_right.SetForegroundColour('BLUE')
-        box.Add(text_left, 0, wx.EXPAND|wx.LEFT|wx.RIGHT, 5)
-        box.Add(text_center, 0, wx.EXPAND|wx.LEFT|wx.RIGHT, 5)
-        box.Add(text_right, 0, wx.EXPAND|wx.LEFT|wx.RIGHT, 5)
-        sizer.Add(box, 0, wx.GROW|wx.ALL, 0)
+        box.Add(text_left, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
+        box.Add(text_center, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
+        box.Add(text_right, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
+        sizer.Add(box, 0, wx.GROW | wx.ALL, 0)
 
     def __init__(
             self,
@@ -111,12 +109,13 @@ class StringConvertDialog(wx.Dialog):
             wx.StaticLine(self), 0, wx.TOP | wx.BOTTOM | wx.EXPAND, 5)
 
         buttons = self.CreateButtonSizer(button_style)
-        main_sizer.Add(buttons, 0, wx.EXPAND|wx.ALL, 5)
+        main_sizer.Add(buttons, 0, wx.EXPAND | wx.ALL, 5)
         self.SetSizerAndFit(main_sizer)
         if self.GetSize()[0] < 150:
             self.SetSize(wx.Size(150, -1))
         if self.GetSize()[1] < 100:
             self.SetSize(wx.Size(-1, 100))
+
 
 class HexEditorGrid:
     def _on_string_convert(self) -> bool:
@@ -126,7 +125,7 @@ class HexEditorGrid:
         sel = self._selection
         if sel[0] is None:
             return False
-        if sel[1] == None:
+        if sel[1] is None:
             length = 1
         else:
             length = sel[1] - sel[0] + 1

@@ -4,10 +4,9 @@
 # construct-gallery module
 #############################################################################
 
-from setuptools import setup, find_packages
+from setuptools import setup
 import re
 import os
-import sys
 
 import json
 from urllib import request
@@ -17,17 +16,23 @@ from pkg_resources import parse_version
 
 END_OF_INTRODUCTION = '## Setup'
 
-EPILOGUE = '''
-Full information, installation notes, API reference and usage details at the [construct-gallery GitHub repository](https://github.com/Ircama/construct-gallery).
-'''
+EPILOGUE = (
+    "Full information, installation notes, API reference and usage details at "
+    "the [construct-gallery GitHub repository]"
+    "(https://github.com/Ircama/construct-gallery)."
+)
 
-DESCRIPTION = ("construct-gallery GUI (based on wxPython) and development modules")
+DESCRIPTION = (
+    "construct-gallery GUI (based on wxPython) "
+    "and development widgets"
+)
 
 PACKAGE_NAME = "construct-gallery"
 
 VERSIONFILE = "construct_gallery/__version__.py"
 
 ###########################################################################
+
 
 def versions(pkg_name, site):
     url = 'https://' + site + '.python.org/pypi/' + pkg_name + '/json'
@@ -39,13 +44,14 @@ def versions(pkg_name, site):
         return []
     return sorted(releases, key=parse_version, reverse=True)
 
+
 with open("README.md", "r") as readme:
     long_description = readme.read()
 
 build = ''
-verstrline = open(VERSIONFILE, "rt").read()
+ver_str_line = open(VERSIONFILE, "rt").read()
 VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
-mo = re.search(VSRE, verstrline, re.M)
+mo = re.search(VSRE, ver_str_line, re.M)
 if mo:
     verstr = mo.group(1)
 else:
@@ -59,8 +65,10 @@ if os.environ.get('GITHUB_RUN_NUMBER') is not None:
     if (version_list_pypi or
             version_list_testpypi or
             os.environ.get('GITHUB_FORCE_RUN_NUMBER') is not None):
-        print('---------------------------------'
-            '---------------------------------')
+        print(
+            '---------------------------------'
+            '---------------------------------'
+        )
         print("Using build number " + os.environ['GITHUB_RUN_NUMBER'])
         if version_list_pypi:
             print(
@@ -70,14 +78,16 @@ if os.environ.get('GITHUB_RUN_NUMBER') is not None:
             print(
                 "Version list available in testpypi: " +
                 ', '.join(version_list_testpypi))
-        print('---------------------------------'
-            '---------------------------------')
+        print(
+            '---------------------------------'
+            '---------------------------------'
+        )
         verstr += '-' + os.environ['GITHUB_RUN_NUMBER']
 
 setup(
     name=PACKAGE_NAME,
     version=verstr,
-    description=(DESCRIPTION),
+    description=DESCRIPTION,
     long_description=long_description[
         :long_description.find(END_OF_INTRODUCTION)] + EPILOGUE,
     long_description_content_type="text/markdown",
@@ -106,7 +116,10 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'construct-editor'
+        'construct_editor>=0.1.5'
+        'setuptools>=68.2.0',
+        'wxPython>=4.2.1',
+        'construct>=2.10.70',
     ],
     keywords=[
         "construct-gallery",

@@ -3,3 +3,5 @@ __pycache__
 construct_gallery.egg-info/
 build/
 dist/
+.idea
+/venv/

@@ -3,8 +3,6 @@
 import wx
 from construct_editor.wx_widgets.wx_hex_editor import ContextMenuItem
 from .string_convert_plugin import HexDump
-import construct
-import re
 
 
 class MultiLineTextEntryDialog(wx.Dialog):
@@ -196,7 +194,7 @@ class HexEditorGrid:
         sel = self._selection
         if sel[0] is None:
             return False
-        if sel[1] == None:
+        if sel[1] is None:
             length = 1
         else:
             length = sel[1] - sel[0] + 1

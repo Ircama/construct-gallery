@@ -25,7 +25,7 @@ class HexEditorGrid:
     ]
     allow_python = False
 
-    def _on_allow_python(self) -> bool:
+    def _on_allow_python(self):
         """
         Toggle the "allow pasting Python from clipboard" checkbox
         on the context menu of the hex editor

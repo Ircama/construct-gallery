@@ -3,26 +3,24 @@
 #############################################################################
 
 import re
-import wx
 from pkgutil import iter_modules
-import construct_editor.gallery
 from importlib import import_module
-from construct_gallery import (
-    ConstructGallery, GalleryItem, ConfigEditorPanel
-)
-from construct_editor.core.model import IntegerFormat
-import construct as cs
 from collections import OrderedDict
 import sys
 import argparse
 import logging
 import importlib.util
+import wx
+import construct as cs
+import construct_editor.gallery
+from construct_gallery import (
+    ConstructGallery, GalleryItem, ConfigEditorPanel, BleakScannerConstruct
+)
+from construct_editor.core.model import IntegerFormat
 try:
     import bleak.uuids
-    from construct_gallery import BleakScannerConstruct
 except ImportError:
-    class BleakScannerConstruct:
-        BLEAK_IS_USED = False  # it means invalid class and black not installed
+    pass
 
 
 def config_app(construct_module):
@@ -65,9 +63,9 @@ def config_app(construct_module):
 
     app = wx.App(False)
     width, height = wx.GetDisplaySize()
-    title = "ConfigEditorPanelFrame demo"
+    title = "Config Editor"
     if construct_module:
-        title = "Config Editor - " + construct_module.__file__
+        title += " - " + construct_module.__file__
     frame = wx.Frame(
         None,
         pos=(int(width * 5 / 100), int(height * 5 / 100)),
@@ -75,33 +73,38 @@ def config_app(construct_module):
         size=(int(width * 90 / 100), int(height * 90 / 100))
     )
     frame.CreateStatusBar()
-    main_panel = ConfigEditorPanel(frame,
+    main_panel = ConfigEditorPanel(
+        frame,
         editing_structure=editing_structure,
         name_size=180,
         type_size=160,
-        value_size=200)
+        value_size=200
+    )
     frame.Show(True)
     app.MainLoop()
     for char in main_panel.editor_panel:
         editing_structure[char][
             "new_binary"] = main_panel.editor_panel[char].binary
     for i in editing_structure:
-        print(f'{i}: {editing_structure[i]["binary"]} --> '
-            f'{editing_structure[i]["new_binary"]}')
+        print(
+            f'{i}: {editing_structure[i]["binary"]} --> '
+            f'{editing_structure[i]["new_binary"]}'
+        )
+
 
 def bleak_app(construct_module, args):
     class SDBleakScannerConstruct(BleakScannerConstruct):
         sep = " \u250a "  # thin vertical dotted bar
 
         def bleak_advertising(self, device, advertisement_data):
-            def get_uuid(i):
-                uuid = bleak.uuids.uuidstr_to_str(i)
+            def get_uuid(uuid_str):
+                uuid = bleak.uuids.uuidstr_to_str(uuid_str)
                 if uuid == "Vendor specific":
                     uuid += " "
                     try:
-                        uuid += re.findall(r'\d+', i)[0].lstrip('0')
+                        uuid += re.findall(r'\d+', uuid_str)[0].lstrip('0')
                     except ValueError:
-                        uuid += i
+                        uuid += uuid_str
                 return uuid
 
             logging.warning(
@@ -117,10 +120,10 @@ def bleak_app(construct_module, args):
                 for i in advertisement_data.service_uuids:
                     local_name += get_uuid(i) + self.sep
             if (
-            args.detect_manuf_data or args.not_detect_svc_data
+                args.detect_manuf_data or args.not_detect_svc_data
             ) and advertisement_data.manufacturer_data:
-                for id, data in advertisement_data.manufacturer_data.items():
-                    str_name = f"{local_name}Manufacturer {id}"
+                for adv_id, data in advertisement_data.manufacturer_data.items():
+                    str_name = f"{local_name}Manufacturer {adv_id}"
                     self.add_packet_frame(
                         data=data,
                         append_label=str_name,
@@ -139,9 +142,9 @@ def bleak_app(construct_module, args):
 
     app = wx.App(False)
     width, height = wx.GetDisplaySize()
-    title = "BleakScannerConstructFrame demo"
+    title = "BLE Advertising Editor"
     if construct_module:
-        title = "BLE Advertising Editor - " + construct_module.__file__
+        title += " - " + construct_module.__file__
     frame = wx.Frame(
         None,
         pos=(int(width * 5 / 100), int(height * 5 / 100)),
@@ -162,16 +165,18 @@ def bleak_app(construct_module, args):
     frame.Show(True)
     app.MainLoop()
 
+
 def on_close(frame, event):
     frame.on_application_close()
     event.Skip()
 
+
 def gallery_app(construct_module, args):
     app = wx.App(False)
     width, height = wx.GetDisplaySize()
-    title = "ConstructGalleryFrame demo"
+    title = "Construct Gallery Editor"
     if construct_module:
-        title = "Construct Gallery Editor - " + construct_module.__file__
+        title += " - " + construct_module.__file__
     frame = wx.Frame(
         None,
         pos=(int(width * 5 / 100), int(height * 5 / 100)),
@@ -222,14 +227,13 @@ def gallery_app(construct_module, args):
         }
         gallery_descriptor.update(
             {
-                module : GalleryItem(
+                module: GalleryItem(
                     construct=sample_modules[module].gallery_item.construct,
                     contextkw=sample_modules[module].gallery_item.contextkw,
                     clear_log=True,
                     example_bytes=sample_modules[
                         module].gallery_item.example_binarys
-                )
-        for module in sample_modules
+                ) for module in sample_modules
             }
         )
     main_panel = ConstructGallery(
@@ -245,8 +249,10 @@ def gallery_app(construct_module, args):
     frame.Show(True)
     app.MainLoop()
 
+
 def ble_main():
     return main(True)
+
 
 def main(run_bleak=False):
     package = sys.modules[ConstructGallery.__module__].__package__
@@ -312,7 +318,7 @@ def main(run_bleak=False):
         "--gallery",
         dest='gallery',
         action='store_true',
-        help="ConstructGallery demo (default)")
+        help="Construct Gallery Editor (default)")
     parser.add_argument(
         '-F',
         '--gallery_descriptor',
@@ -337,13 +343,13 @@ def main(run_bleak=False):
             "--bleak",
             dest='bleak',
             action='store_true',
-            help="BleakScannerConstruct test app.")
-    a = group.add_argument(
-        '-c',
-        "--config",
-        dest='config',
-        action='store_true',
-        help="ConfigEditorPanel demo.")
+            help="BLE Advertising Editor.")
+        group.add_argument(
+            '-c',
+            "--config",
+            dest='config',
+            action='store_true',
+            help="Config Editor.")
     args = parser.parse_args()
     if BleakScannerConstruct.BLEAK_IS_USED:
         if (

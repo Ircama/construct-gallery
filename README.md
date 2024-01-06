@@ -5,13 +5,31 @@
 [![PyPI download month](https://img.shields.io/pypi/dm/construct-gallery.svg)](https://pypi.python.org/pypi/construct-gallery/)
 [![GitHub license](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-blue)](https://raw.githubusercontent.com/ircama/construct-gallery/master/LICENSE)
 
-__Development and testing tool for construct, including widgets that extend the functionalities of *construct-editor*__
+__Development and testing tool for construct, including widgets extending the functionalities of *construct-editor*__
 
-*construct-gallery* is a GUI to interactively develop and test [construct](https://construct.readthedocs.io/en/latest/) data structures, dynamically parsing and building sample data which can be catalogued in an editable gallery and also stored in Pickle archives for later re-execution. It also offer widgets that can be integrated in other programs.
+*construct-gallery* is a GUI to interactively develop and test [construct](https://construct.readthedocs.io/en/latest/) data structures, dynamically parsing and building sample data which can be catalogued in an editable gallery and also stored in Pickle archives for later test re-execution. It also offers widgets that can be integrated in other Python programs.
 
-The *construct* format shall be developed in a Python program through any IDE or editor. While editing and after loading the program to *construct-gallery*, it can be checked and also dyanmically reloaded if modified meawhile.
+The *construct* format shall be developed in a Python program through any IDE or editor. While editing and after loading the program to *construct-gallery*, it can be checked and also dynamically reloaded if modified meanwhile.
 
 *construct-gallery* is based on [wxPython](https://www.wxpython.org/) and [construct-editor](https://github.com/timrid/construct-editor): specifically, it relies on the excellent editing widgets provided by the *construct-editor* module and offers a superset of features compared with its standard [GUI](https://github.com/timrid/construct-editor/blob/main/construct_editor/main.py).
+
+## Main functionalities
+
+- Ready-to-use, cross-platform GUI
+- API widgets
+- The tool allows to define a gallery of *construct* formats, optionally associated to samples, which can be dynamically added, edited or predefined.
+- Hex bytes can be collected into a gallery of samples, then renamed and reordered.
+- Samples are listed in the left panel, shown as hex bytes in the central panel and then parsed to browsable *construct* structures in the right panel.
+- Data can be saved to files in [pickle format](https://docs.python.org/3/library/pickle.html). Archives can be subsequently reloaded and appended to the current samples. They can also be inspected with `python3 -mpickle archive-file-name.pickle`.
+- The Python error management is wrapped into a GUI panel.
+- A Python shell button allows to open an inspector shell, which also provides a special *Help* with related submenu (or by pressing F9).
+- All panels allow a context menu (invoked with the right click of the mouse) with a number of special functions.
+  - The left menu panel allows renaming labels and changing attribute labels. Also, by double-clicking an unused area of the left panel, new frames can be added and then labelled; subsequently, specific attributes can be associated. Samples can be repositioned, or deleted.
+  - The hex editor (central panel) allows any kind of editing and copy/paste. Sequences of bytes can be pasted [in a number of different formats](https://github.com/timrid/construct-editor/pull/17#issuecomment-1367582581). Also, a special checkbox enables pasting Python expressions. Debugging tools are also provided (invoked with the right click of the mouse after selecting a sequence of bytes), to insert or convert bytes into a wide set of numeric forms as well as strings; these debug panels can be used to quickly check the most appropriate conversion method for a sequence of bytes.
+
+When also *bleak* is installed, the GUI includes a BLE Advertsement monitoring tool. Advertisements are logged in their reception sequence, automatically labeled with related MAC address.
+- A filter button can be used to enter a specific MAC address to restrict logging, a portion of it or a sequence of addresses, as well as BLE local names.
+- When starting the BLE reception, a debug window is opened in background, with the possibility to control the debug level and clear the produced data.
 
 ## Example of basic usage
 
@@ -32,15 +50,15 @@ Load it with *construct-gallery*:
 python3 -m construct_gallery constr.py
 ```
 
-Paste the following bytes to the the central hex panel of *construct-gallery*:
+Paste the following bytes to the central hex panel of *construct-gallery*:
 
 ```
 14 00 0c
 ```
 
-You can use all available tools of *construct-gallery* to edit digits and test results. Notice the various plugins that enrich the functionalities of *construct-editor*.
+You can use all the available tools of *construct-gallery* to edit the digits and test the results. Notice the various plugins that enrich the functionalities of *construct-editor*.
 
-You can keep *construct-gallery* running while editing *constr.py*; paste for instance the following code replacing the previous one, then save:
+You can keep *construct-gallery* running while editing *constr.py* with your preferred editor or IDE; paste for instance the following code, replacing the previous one, then save:
 
 ```python
 from construct import *
@@ -57,27 +75,27 @@ construct_format = GreedyRange(
 )
 ```
 
-Press "Reload construct module" in *construct-gallery*. You will see the pdated structure.
+Note: when using [tunnels](https://construct.readthedocs.io/en/latest/api/adapters.html#construct.ExprAdapter), you also need to [declare the adapter](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/core/custom.py#L53) for correct rendering in *construct_editor*.
 
-Past the following bytes to the the central hex panel of *construct-gallery*:
+Press "Reload construct module" in *construct-gallery*: you will see the updated structure.
+
+Past the following bytes to the central hex panel of *construct-gallery*:
 
 ```
 02 08 0c 70 08 0d de 08 0e 4c 09 0f ba 09 10
 ```
 
-You will see the appropriately parsed data in the right panel of *construct-gallery*.
+The appropriately parsed data will be available in the right panel of *construct-gallery*, where values can be edited, producing the dynamical update of the byte sequence in the central panel.
 
-Select the bytes in the central panel
-
-Notice that, when using [tunnels](https://construct.readthedocs.io/en/latest/api/adapters.html#construct.ExprAdapter), you also need to [declare the adapter](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/core/custom.py#L53) for correct rendering in *construct_editor*.
+Select some bytes in the central panel, press the right key of the mouse: a context menu is shown, with a set of editing and debugging tools. 
 
 ## Advanced usage
 
-Other than the previously described basic sample, *construct-gallery*  offers advanced modes that allow you to predefine a gallery of samples with different formats and options.
+Other than the previously described basic mode, *construct-gallery*  offers advanced configurations that allow you to predefine a gallery of samples with different formats and options. The data structure defined with *construct-gallery* can be used to provide optional attributes to the *construct* format.
 
 Specifically, *construct-gallery* is able to read two kinds of formats inside the Python program:
 
-- a basic format, consisting of a single gallery element (the one previously mentioned):
+- the basic one, consisting of a single gallery element (the one previously exemplified):
 
   ```
   construct_format = <Construct structure>
@@ -89,7 +107,7 @@ Specifically, *construct-gallery* is able to read two kinds of formats inside th
   gallery_descriptor = <dictionary or ordered dictionary of GalleryItem elements>
   ```
 
-Notice that *construct_format* and *gallery_descriptor* are default variables which can be changed through the `-f`/`-F` options or via API.
+Notice that *construct_format* and *gallery_descriptor* are default names of variables which can be changed through the `-f`/`-F` options, or via API.
 
 When using the *construct_format* mode, in order to provide basic structures for testing, *construct-gallery* automatically creates *Bytes*, *Characters* and *UTF-8 String* galleries (if you run the previous example, you can see them).
 
@@ -97,52 +115,53 @@ The *gallery_descriptor* mode allows you to define custom galleries. To classify
 
 The *gallery_descriptor* mode can be:
 
-- a dictionary of `"item name": GalleryItem()`. Example:
+- a dictionary of `"item name": GalleryItem()` (*key: value* pairs). Example:
 
-    ```python
-    from construct import *
-    from construct_gallery import GalleryItem
+  ```python
+  from construct_gallery import GalleryItem
 
-    gallery_descriptor = {
-        "Item 1": GalleryItem(
-        ...
-        ),
-        "Item 2": GalleryItem(
-        ...
-        )
-    }
-    ```
+  gallery_descriptor = {
+      "Item 1": GalleryItem(
+      ...
+      ),
+      "Item 2": GalleryItem(
+      ...
+      )
+  }
+  ```
 
-- an ordered dictionary of `"item name": GalleryItem()`. Example:
+- an ordered dictionary of `"item name": GalleryItem()` (*key: value* pairs). Example:
 
-    ```python
-    from construct import *
-    from construct_gallery import GalleryItem
-    from collections import OrderedDict
+  ```python
+  from construct_gallery import GalleryItem
+  from collections import OrderedDict
 
-    gallery_descriptor = (
-        OrderedDict(
-            [
-                (
-                    "Item 1",
-                    GalleryItem(
-                        ...
-                    ),
-                ),
-                (
-                    "Item 2",
-                    GalleryItem(
-                        ...
-                    ),
-                ),
-            ]
-        )
-    )
-    ```
+  gallery_descriptor = (
+      OrderedDict(
+          [
+              (
+                  "Item 1",
+                  GalleryItem(
+                      ...
+                  ),
+              ),
+              (
+                  "Item 2",
+                  GalleryItem(
+                      ...
+                  ),
+              ),
+          ]
+      )
+  )
+  ```
 
-*GalleryItem* data model:
+*GalleryItem* data model used by *construct_gallery*:
 
 ```python
+import dataclasses
+import typing as t
+
 @dataclasses.dataclass
 class GalleryItem:
     construct: "cs.Construct[t.Any, t.Any]"
@@ -153,19 +172,15 @@ class GalleryItem:
     example_key: t.Dict[str, dict] = dataclasses.field(default_factory=dict)
 ```
 
-The following elements describe the usage of the *GalleryItem* data class.
+The `construct` attribute is mandatory and must be referred to a `construct` definition.
 
-- The `construct` parameter is mandatory and must refer a `construct` definition.
-- the `clear_log` parameter is optional: when set to `True`, all related samples are deleted each time a `construct` is changed in the gallery through the GUI; otherwise, new samples are added at the bottom of the sample list.
-- `contextkw` is a dictionary of *key:value* pairs of items to be passed to `construct` as arguments.
+*GalleryItem* can collect `example_bytes`, which is a dictionary or ordered dictionary of bytes; this is the simplest mode and consists of a collection of `"label": bytes` key-value pairs.
 
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-Samples can be either described as `example_bytes` (an ordered dictionary of "sample": bytes), or `example_dict` (an ordered dictionary of "sample":bytes ("binary") and *reference* ("reference"), like in the sample) and `example_key` is a dictionary of *"reference": { key, description }*.
+The `clear_log` attribute is optional: when set to `True`, all related samples are deleted each time a `construct` is changed in the gallery through the GUI; otherwise, new samples are added at the bottom of the sample list.
 
-The actual name of "reference" is determined by the `reference_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Example, if `reference_label="MAC address"`, then the reference will be `"mac_address"`.
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+All other attributes available with *gallery_descriptor* (*contextkw*, *example_dict*, *example_key*) are described later.
 
-Example of *GalleryItem* using `example_bytes` samples in basic and then ordered dictionary formats:
+Example of *GalleryItem* using the basic dictionary format of the `example_bytes` samples:
 
 ```python
 import construct as cs
@@ -254,68 +269,139 @@ gallery_descriptor = {
 }
 ```
 
+Other than *example_bytes*, *gallery_descriptor* supports *contextkw*, *example_dict* and *example_key*).
 
+`example_dict` is an ordered dictionary of ordered dictionaries; the form is a collection of `"label": dict_item` key-value elements, where *dict_item* is in turn a collection of `"binary": bytes, "reference": string` elements; the label *reference* can be customized through the *reference_label* parameter; for instance `reference_label="MAC address"`.
 
+`contextkw` is a dictionary of *key: value* pairs of items to be passed to `construct` as arguments.
 
+`example_key` is a dictionary of *"reference": { key, description }*.
 
+The actual name of "reference" is determined by the `reference_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Example, if `reference_label="MAC address"`, then the reference will be `"mac_address"`.
 
+The following diagram describes the relationship among the various attributes:
 
-
-
-
-
-
-
-
-
-
-
-
-
-In `example_key`, the actual name of "key" is determined by the `key_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Example, if `key_label="Bindkey"`, then the key will be `"bindkey"`. Same for the *description label (ref. `description_label`). Example:
-
-```python
-example_key={
-    "A4:C1:38:AA:BB:EE": {
-        "bindkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        "description": "test A",
-    },
-    "A4:C1:38:AA:BB:CC": {
-        "bindkey": "cccccccccccccccccccccccccccccccc",
-        "description": "test B",
+```mermaid
+erDiagram
+    gallery_descriptor {
+        %% "construct" selector, upper list box
+        string gallery_item_label PK "(upper table)"
+        class GalleryItem
     }
-}
+    "GalleryItem" {
+        Construct construct
+        boolean clear_log "(optional)"
+        dict example_bytes "(optional)"
+        dict example_dict "(optional)"
+        dict example_key "(optional)"
+    }
+    example_bytes {
+        string example_bytes_label PK
+        bytes bytes
+    }
+    example_dict {
+        string example_dict_label PK
+        bytes binary
+        hex reference
+    }
+    example_key {
+        hex reference PK
+        hex key
+        string description
+    }
+    gallery_descriptor ||--o{ GalleryItem : contains
+    GalleryItem ||--o{ example_bytes : contains
+    GalleryItem ||--o{ example_dict : contains
+    example_dict ||--|| example_key : contains
 ```
 
-Example of `ref_key_descriptor`:
+Using the previously described *constr.py* example to test the advanced usage of the *gallery_descriptor* format, paste the following code, then save:
 
 ```python
-ref_key_descriptor = {
-    "A4:C1:38:AA:BB:CC": {"bindkey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
-    "A4:C1:38:AA:BB:DD": {"bindkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-    "A4:C1:38:AA:BB:EE": {"bindkey": "cccccccccccccccccccccccccccccccc"}
+from collections import OrderedDict
+from construct import *
+import construct_editor.core.custom as custom
+from construct_gallery import GalleryItem
+
+custom.add_custom_adapter(ExprAdapter, "Int16ul_x100", custom.AdapterObjEditorType.String)
+Int16ul_x100 = ExprAdapter(Int16ul, obj_ / 100, lambda obj, ctx: int(float(obj) * 100))
+
+gallery_descriptor = {
+    "Basic example": GalleryItem(
+        construct=Struct(
+            "temperature" / Int16sl,
+            "counter" / Int8ul
+        ),
+        clear_log=True,
+        example_bytes={
+            'Numbers 20 and 12': bytes.fromhex("14 00 0c"),
+            'Numbers 21 and 13': bytes.fromhex("15 00 0d"),
+        }
+    ),
+    "More complex example": GalleryItem(
+        construct=GreedyRange(
+            Struct(
+                "temperature" / Int16ul_x100,
+                "counter" / Int8ul,
+            )
+        ),
+        clear_log=True,
+        example_bytes=OrderedDict(  # OrderedDict format
+            [
+                ('Ten numbers', bytes.fromhex(
+                    "02 08 0c 70 08 0d de 08 0e 4c 09 0f ba 09 10")),
+                ('All 1', bytes.fromhex(
+                    "64 00 01 64 00 01 64 00 01 64 00 01 64 00 01")),
+                ('All 0', bytes(8 + 4 + 2 + 1)),
+            ]
+        )
+    ),
+    "Most configurable case": GalleryItem(
+        construct=GreedyRange(
+            Struct(
+                "temperature" / Int16ul_x100,
+                "counter" / Int8ul,
+            )
+        ),
+        clear_log=True,
+        example_dict=OrderedDict(
+            [
+                (
+                    "Ten numbers",
+                    {
+                        "binary": bytes.fromhex("28 0a 11 8c 0a 12 f0 0a 13 54 0b 14 b8 0b 15"),
+                        "reference": "AA:BB:CC:DD:EE:FF",
+                    },
+                ),
+                (
+                    "All 2",
+                    {
+                        "binary": bytes.fromhex("c8 00 02 c8 00 02 c8 00 02 c8 00 02 c8 00 02"),
+                        "reference": "AA:BB:CC:DD:EE:FF",
+                    },
+                ),
+                (
+                    "All 3",
+                    {
+                        "binary": bytes.fromhex("2c 01 03 2c 01 03 2c 01 03 2c 01 03 2c 01 03"),
+                        "reference": "00:11:22:33:44:55",
+                    },
+                ),
+            ]
+        ),
+        example_key={
+            "AA:BB:CC:DD:EE:FF": {
+                "key": "aaaaaaaa",
+                "description": "description A",
+            },
+            "00:11:22:33:44:55": {
+                "key": "bbbbbbbb",
+                "description": "description B",
+            }
+        }
+    ),
 }
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## Command-line parameters
 
@@ -354,6 +440,8 @@ options:
 construct_gallery utility
 ```
 
+Parameters `-b`, `-m` and `-M` are available when *bleak* is installed.
+
 Error exit codes:
 3: invalid command line parameter
 
@@ -370,6 +458,8 @@ The following Python modules are included:
   `construct_gallery.py` is based on [wxPython](https://www.wxpython.org/) and [construct-editor](https://github.com/timrid/construct-editor): it relies on the excellent editing widgets provided by the *construct-editor* module and offers a superset of features compared with its standard [GUI](https://github.com/timrid/construct-editor/blob/main/construct_editor/main.py).
   
   This module can be directly used in GUI programs, or can be further extended with `bleak_scanner_construct.py`.
+
+- `edit_plugin.py`, enabling "Edit UTF-8 text" and "Edit bytes" options on the context-menu of the central hex editor panel.
 
 - `config_editor.py`, providing the `ConfigEditorPanel()` class (widget).
 
@@ -393,20 +483,6 @@ The following Python modules are included:
   - `string_convert_plugin.py`
 - `wx_logging_plugin.py`, providing a debug GUI panel in background.
 - `pyshell_plugin.py`, activating a Python shell button that allows opening a PyShell frame (PyShell is a GUI-based python shell), which also includes a special *Help* with related submenu (that can be invoked also via F9). 
-
-## Main functionalities
-
-- Cross-platform GUI
-- The GUI includes a BLE control (implemented with buttons) which allows starting and stopping the BLE advertising receiver. Advertisements are logged in their reception sequence, automatically labbelled with the MAC address.
-- A filter button can be used to enter a specific MAC address to restrict logging, a portion of it or a sequence of addresses, as well as BLE local names.
-- Logged data can be saved to file in [pickle format](https://docs.python.org/3/library/pickle.html). Archives can be subsequently reloaded and appended to the current log. They can also be inspected with `python -mpickle archive-file-name.pickle`.
-- Advertisement data are logged in the left panel, shown as hex bytes in the central panel and then parsed to browsable *construct* structures in the right panel.
-- The Python error management is wrapped into a GUI panel.
-- A Python shell button allows opening an inspector shell, which also provides a special *Help* with related submenu (or by pressing F9).
-- All panels allow a context menu (invoked with the right click of the mouse) with a number of special functions.
-  - The left log menu panel allows renaming labels and changing MAC address. Also, by double clicking an unused area of the log panel, new frames can be added and then labelled; subsequently, a specific MAC address can be associated. Log elements can be repositioned, or deleted.
-  - The hex editor (central panel) allows any kind of copy/paste. Sequences of bytes can be pasted [in a number of different formats](https://github.com/timrid/construct-editor/pull/17#issuecomment-1367582581). Also a special checkbox enables pasting Python expressions. Two debugging tools are also provided (invoked with the right click of the mouse after selecting a sequence of bytes), to convert bytes into a wide set of numeric forms as well as strings; these debug panels can be used to quickly check the most appropriate conversion method for a sequence of bytes.
-- When starting the BLE reception, a debug window is opened in background, with the possibility to control the debug level and clear the produced data.
 
 ## Setup
 
@@ -444,7 +520,7 @@ python3 -m pip install attrdict3
 
 The C compiler is needed too.
 
-Alternatively to the above mentioned installation method, the following steps allow installing the latest version from GitHub.
+Alternatively to the above-mentioned installation method, the following steps allow installing the latest version from GitHub.
 
 - Optional preliminary configuration (if not already done):
 
@@ -471,10 +547,6 @@ To uninstall:
 python3 -m pip uninstall -y construct-gallery
 ```
 
-## Basic use
-
-Run `construct-gallery` from the command line. Follow the API Documentation for the rest.
-
 ## API Documentation
 
 ### ConstructGallery
@@ -482,14 +554,11 @@ Run `construct-gallery` from the command line. Follow the API Documentation for 
 Test it with `python3 -m construct_gallery -c`.
 
 ```python
-import wx
-import construct as cs
-from construct_gallery import ConstructGallery, GalleryItem
-from collections import OrderedDict
+from construct_gallery import ConstructGallery
 
 ...
 cg = ConstructGallery(
-    frame,
+    parent,
     load_menu_label="Gallery Data",  # label of the clear samples button
     clear_label="Gallery",           # label of the clear gallery button
     reference_label=None,
@@ -501,9 +570,11 @@ cg = ConstructGallery(
     ordered_samples=None,
     ref_key_descriptor=None,
     default_gallery_selection=0,  # number of the selected element in the construct gallery
+    gallery_descriptor_var=None,
+    construct_format_var=None,
     col_name_width=None,          # width of the first column ("name")
     col_type_width=None,          # width of the second column ("type")
-    col_value_width=None          # width of the third column ("value"),
+    col_value_width=None,         # width of the third column ("value"),
     run_shell_plugin=True,        # activate the shell plugin by default
     run_hex_editor_plugins=True   # activate the hex editor plugins by default
 )
@@ -514,7 +585,35 @@ cg = ConstructGallery(
 
 If a module is used, the button "Reload construct module" appears, to enable the dynamic reloading of the module.
 
-A table (activated through a buttomn) allows editing MAC addresses and their related Bindkey and description.
+A table (activated through a button) allows editing MAC addresses and their related Bindkey and description.
+
+Example of `example_key`:
+
+```python
+example_key={
+    "A4:C1:38:AA:BB:EE": {
+        "bindkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "description": "test A",
+    },
+    "A4:C1:38:AA:BB:CC": {
+        "bindkey": "cccccccccccccccccccccccccccccccc",
+        "description": "test B",
+    }
+}
+```
+
+In `example_key`, the actual name of "key" is determined by the `key_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Example, if `key_label="Bindkey"`, then the key will be `"bindkey"`. Same for the *description* label (ref. `description_label`). Example:
+
+
+Example of `ref_key_descriptor`:
+
+```python
+ref_key_descriptor = {
+    "A4:C1:38:AA:BB:CC": {"bindkey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    "A4:C1:38:AA:BB:DD": {"bindkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+    "A4:C1:38:AA:BB:EE": {"bindkey": "cccccccccccccccccccccccccccccccc"}
+}
+```
 
 Complete program:
 
@@ -635,6 +734,7 @@ This widget implements an editing GUI composed by a form including multiple stru
 The object returned by "ConfigEditorPanel" can be used to read the edited structure via the included "editor_panel" array, like with the following:
 
 ```python
+from construct_gallery import ConfigEditorPanel
 ...
 config_editor_panel = ConfigEditorPanel(...)
 ...
@@ -657,12 +757,12 @@ import construct as cs
 editing_structure = {
     0: {  # This must be numeric; multiple numbers can be included. The word "Characteristic 0" is written to the left side, as the first line.
         "name": "A string",  # The bold name "A string" is written to the left side, as the second line.
-        "binary": b"My string",  # the "bytes" window is hidden by the fault ancd can be espanded through the GUI
+        "binary": b"My string",  # the "bytes" window is hidden by the fault and can be expanded through the GUI
         "construct": cs.Struct(
             "My string" / cs.GreedyString("utf8"),
         ),
         "read_only": True,  # (boolean) False or True. If True, "(read only)" is written to the left side, as the third line.
-        "size": 130,  # Number of verical pixels to show (if smallet than the minimum requested size, a scroll bar appears).
+        "size": 130,  # Number of vertical pixels to show (if smaller than the minimum requested size, a scroll bar appears).
         "IntegerFormat": IntegerFormat.Hex,  # Default format for integers: IntegerFormat.Hex or IntegerFormat.Dec
     },
 }
@@ -671,13 +771,14 @@ app = wx.App(False)
 frame = wx.Frame(
     None, title="ConfigEditorPanelFrame demo", size=(1000, 300))
 frame.CreateStatusBar()
-main_panel = ConfigEditorPanel(frame,
+main_panel = ConfigEditorPanel(
+    frame,
     editing_structure=editing_structure,
     name_size=180,
     type_size=160,
-    value_size=200)
+    value_size=200
+)
 frame.Show(True)
-print(get_report())
 app.MainLoop()
 for char in main_panel.editor_panel:
     editing_structure[char][
@@ -701,11 +802,7 @@ classDiagram
 Test it with `python3 -m construct_gallery -b`.
 
 ```python
-import wx
-import construct as cs
-from construct_gallery import ConstructGallery, GalleryItem, BleakScannerConstruct
-from collections import OrderedDict
-from bleak import BleakScanner
+from construct_gallery import BleakScannerConstruct
 
 bc = BleakScannerConstruct(
     frame,
@@ -716,17 +813,21 @@ bc = BleakScannerConstruct(
     clear_label="Log Data",
     added_data_label="Logging data",
     logging_plugin=True,
-        (same argumnents as ConstructGallery)
+        #  (same arguments as ConstructGallery)
 )
 ```
 
 Optionally, `bleak_scanner_kwargs` allows defining a dictionary of arguments passed to *BleakScanner* in the form: `BleakScanner(detection_callback, **bleak_scanner_kwargs)`.
 
-The intended way to use this class is to create a subclass that overrides the *bleak_advertising()* method (which does nothing in the partent class). The overridden method shall detect valid advertisements and call `self.add_packet_frame()` to log data to the gallery samples of *construct-gallery*. *logging* can be used to log debugging information to *wx_logging_plugin*.
+The intended way to use this class is to create a subclass that overrides the *bleak_advertising()* method (which does nothing in the parent class). The overridden method shall detect valid advertisements and call `self.add_packet_frame()` to log data to the gallery samples of *construct-gallery*. *logging* can be used to log debugging information to *wx_logging_plugin*.
 
 Example:
 
 ```python
+from construct_gallery import BleakScannerConstruct
+import logging
+
+
 class MyScanner(BleakScannerConstruct):
     def bleak_advertising(self, device, advertisement_data):
         format_label = ...get_label_from...advertisement_data
@@ -748,7 +849,7 @@ class MyScanner(BleakScannerConstruct):
             device.address, format_label, advertisement_data, device.rssi)
 ```
 
-*BleakScannerConstruct* does all the logic to perform asynchronous processing of BLE advertisings via the *BleakScanner* method of BLE, including the management of a thread which can be started and stopped through GUI buttons. *add_packet_frame()* calls *add_data()* of *construct-gallery*.
+*BleakScannerConstruct* does all the logic to perform asynchronous processing of BLE advertising via the *BleakScanner* method of BLE, including the management of a thread which can be started and stopped through GUI buttons. *add_packet_frame()* calls *add_data()* of *construct-gallery*.
 
 ```python
 bleak_advertising(self, device, advertisement_data)
@@ -763,7 +864,7 @@ Complete BLE logger program.
 import wx
 import logging
 import construct as cs
-from construct_gallery import ConstructGallery, GalleryItem, BleakScannerConstruct
+from construct_gallery import GalleryItem, BleakScannerConstruct
 
 adv_format = cs.Struct(
     "type" / cs.Int8ub,
@@ -810,17 +911,6 @@ app.MainLoop()
 - `wx_logging_plugin.py`, providing a debug GUI panel in background.
 - `pyshell_plugin.py`, activating a Python shell button that allows opening an inspector shell, which also includes a special *Help* with related submenu (that can be invoked also via F9). 
 
-Import statements:
-
-```python
-from construct_gallery import allow_python_expr_plugin
-from construct_gallery import decimal_convert_plugin
-from construct_gallery import string_convert_plugin
-
-from construct_gallery.pyshell_plugin import PyShellPlugin
-from construct_gallery.wx_logging_plugin import WxLogging
-```
-
 The following example shows how to add the first three plugins to *HexEditorGrid*. It is based on the [Getting started (as Widgets)](https://github.com/timrid/construct-editor#getting-started-as-widgets) of the *construct-editor* module:
 
 ```python
@@ -841,7 +931,7 @@ class HexEditorGrid(  # add plugins to HexEditorGrid
         construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid):
     def build_context_menu(self):
         menus = super().build_context_menu()
-        menus.insert(-3, None)  # add an horizontal line before the two plugins
+        menus.insert(-3, None)  # add a horizontal line before the two plugins
         return menus
 
 
@@ -885,7 +975,7 @@ class HexEditorGrid(  # add plugins to HexEditorGrid
         construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid):
     def build_context_menu(self):
         menus = super().build_context_menu()
-        menus.insert(-3, None)  # add an horizontal line before the two plugins
+        menus.insert(-3, None)  # add a horizontal line before the two plugins
         return menus
 
 
@@ -977,5 +1067,5 @@ Preview of a sample usage of *ConfigEditorPanel*:
 
 
 
-- `ordered_samples`: `OrderedDict` of samples valid for all construct gallery elements, so independent from specific elements in the *gallery_descriptor*. Notice that, if a reference is used, *reference_label*, *key_label* and *description_label* must be set in *ConstructGallery*.
+- `ordered_samples`: `OrderedDict` of samples valid for all construct gallery elements, so independent of specific elements in the *gallery_descriptor*. Notice that, if a reference is used, *reference_label*, *key_label* and *description_label* must be set in *ConstructGallery*.
 - `ref_key_descriptor`: dictionary of key and descriptor for each reference. This is valid for all construct gallery elements.

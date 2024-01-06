@@ -13,7 +13,6 @@ from pathlib import Path
 import sys
 import typing as t
 from types import TracebackType, ModuleType
-import os
 import re
 import dataclasses
 import time
@@ -21,6 +20,7 @@ import time
 # wx module
 import wx
 import wx.grid
+import wx._core
 import wx.lib.dialogs
 
 # construct module
@@ -57,14 +57,14 @@ class GalleryItem:
 
 
 class HexEditorGrid(  # add plugins to HexEditorGrid
-        string_convert_plugin.HexEditorGrid,
-        edit_plugin.HexEditorGrid,
-        decimal_convert_plugin.HexEditorGrid,
-        allow_python_expr_plugin.HexEditorGrid,
-        wx_hex_editor.HexEditorGrid):
+    string_convert_plugin.HexEditorGrid,
+    edit_plugin.HexEditorGrid,
+    decimal_convert_plugin.HexEditorGrid,
+    allow_python_expr_plugin.HexEditorGrid,
+    wx_hex_editor.HexEditorGrid):
     def build_context_menu(self):
         menus = super().build_context_menu()
-        menus.insert(-5, None)  # add an horizontal line before the two plugins
+        menus.insert(-5, None)  # add a horizontal line before the two plugins
 
         menus.append(
             wx_hex_editor.ContextMenuItem(
@@ -80,28 +80,28 @@ class HexEditorGrid(  # add plugins to HexEditorGrid
 
 class GalleryDict(object):
     @classmethod
-    def init(self, reference_label, key_label, description_label):
-        self.gallery_history = {}
-        self.key_descr_dict = {}
-        self.reference_label = reference_label
-        self.key_label = key_label
-        self.description_label = description_label
-        self.fixed_contextkw = {}
+    def init(cls, reference_label, key_label, description_label):
+        cls.gallery_history = {}
+        cls.key_descr_dict = {}
+        cls.reference_label = reference_label
+        cls.key_label = key_label
+        cls.description_label = description_label
+        cls.fixed_contextkw = {}
 
     @classmethod
-    def set_fixed_contextkw(self, fixed_contextkw):
+    def set_fixed_contextkw(cls, fixed_contextkw):
         """
         If set with a construct dictionary, the contextkw remains fixed for any
         element of the gallery item, until the gallery item changes. Otherwise,
         if fixed_contextkw is {}, dynamic mode is used (key and description
         changes for each reference).
         """
-        self.fixed_contextkw = fixed_contextkw
+        cls.fixed_contextkw = fixed_contextkw
 
     @classmethod
-    def get_contextkw(self, element):
-        if self.fixed_contextkw:
-            return self.fixed_contextkw
+    def get_contextkw(cls, element):
+        if cls.fixed_contextkw:
+            return cls.fixed_contextkw
         ref_elm, reference, key_elm, key = GalleryDict.get_key(element)
         if not reference:
             return {}
@@ -112,7 +112,7 @@ class GalleryDict(object):
             dlg = wx.MessageDialog(
                 None,
                 ref_elm + ' value is "' + reference + '": ' + str(e),
-                "Invalid data in " + self.reference_label,
+                "Invalid data in " + cls.reference_label,
                 wx.OK | wx.ICON_WARNING
             )
             dlg.ShowModal()
@@ -124,7 +124,7 @@ class GalleryDict(object):
             dlg = wx.MessageDialog(
                 None,
                 key_elm + ' value is "' + key + '": ' + str(e),
-                "Invalid data in " + self.key_label,
+                "Invalid data in " + cls.key_label,
                 wx.OK | wx.ICON_WARNING
             )
             dlg.ShowModal()
@@ -140,38 +140,38 @@ class GalleryDict(object):
         return contextkw
 
     @classmethod
-    def get_key_descr_dict(self):
-        return self.key_descr_dict
+    def get_key_descr_dict(cls):
+        return cls.key_descr_dict
 
     @classmethod
-    def set_key_descr_dict(self, key_descr_dict):
-        self.key_descr_dict = key_descr_dict
+    def set_key_descr_dict(cls, key_descr_dict):
+        cls.key_descr_dict = key_descr_dict
 
     @classmethod
-    def update_key_descr_dict(self, key_descr_dict):
-        self.key_descr_dict = {**self.key_descr_dict, **key_descr_dict}
+    def update_key_descr_dict(cls, key_descr_dict):
+        cls.key_descr_dict = {**cls.key_descr_dict, **key_descr_dict}
 
     @classmethod
-    def reset(self):
-        self.gallery_history = {}
+    def reset(cls):
+        cls.gallery_history = {}
 
     @classmethod
-    def update_dict(self, additional_dict):
-        return self.gallery_history.update(additional_dict)
+    def update_dict(cls, additional_dict):
+        return cls.gallery_history.update(additional_dict)
 
     @classmethod
-    def exists(self, element):
-        return element in self.gallery_history
+    def exists(cls, element):
+        return element in cls.gallery_history
 
     @classmethod
-    def len(self):
-        return len(self.gallery_history)
+    def len(cls):
+        return len(cls.gallery_history)
 
     @classmethod
-    def get_binary(self, element):
-        if element not in self.gallery_history:
+    def get_binary(cls, element):
+        if element not in cls.gallery_history:
             return None
-        value = self.gallery_history[element]
+        value = cls.gallery_history[element]
         if isinstance(value, dict) and "binary" in value:
             value = value["binary"]
         if isinstance(value, bytes):
@@ -179,57 +179,57 @@ class GalleryDict(object):
         return None
 
     @classmethod
-    def set(self, element, binary, reference=None):
-        if not self.gallery_history:
-            self.gallery_history = {element: {"binary": binary}}
+    def set(cls, element, binary, reference=None):
+        if not cls.gallery_history:
+            cls.gallery_history = {element: {"binary": binary}}
             GalleryDict.set_reference(element, reference)
             return
         if GalleryDict.exists(element):
-            value = self.gallery_history[element]
+            value = cls.gallery_history[element]
             if isinstance(value, dict):
                 if "binary" in value:
-                    self.gallery_history[element]["binary"] = binary
+                    cls.gallery_history[element]["binary"] = binary
                     GalleryDict.set_reference(element, reference)
                     return
-        self.gallery_history[element] = {"binary": binary}
+        cls.gallery_history[element] = {"binary": binary}
         GalleryDict.set_reference(element, reference)
 
     @classmethod
-    def get_reference(self, element):
-        if not self.reference_label:
+    def get_reference(cls, element):
+        if not cls.reference_label:
             return None, None
-        ref_elm = self.reference_label.lower().replace(" ", "_")
-        if element not in self.gallery_history:
+        ref_elm = cls.reference_label.lower().replace(" ", "_")
+        if element not in cls.gallery_history:
             return ref_elm, None
-        if (isinstance(self.gallery_history[element], dict) and
-                ref_elm in self.gallery_history[element]):
-            return ref_elm, self.gallery_history[element][ref_elm]
+        if (isinstance(cls.gallery_history[element], dict) and
+                ref_elm in cls.gallery_history[element]):
+            return ref_elm, cls.gallery_history[element][ref_elm]
         return ref_elm, ""
 
     @classmethod
-    def set_reference(self, element, reference):
-        if not self.reference_label:
+    def set_reference(cls, element, reference):
+        if not cls.reference_label:
             return
         if not reference:
             return
-        if element not in self.gallery_history:
+        if element not in cls.gallery_history:
             return
-        elm_dict = self.gallery_history[element]
+        elm_dict = cls.gallery_history[element]
         if not isinstance(elm_dict, dict):
             binary = elm_dict
             elm_dict = {"binary": binary}
-        ref_elm = self.reference_label.lower().replace(" ", "_")
+        ref_elm = cls.reference_label.lower().replace(" ", "_")
         elm_dict[ref_elm] = reference
-        self.gallery_history[element] = elm_dict
+        cls.gallery_history[element] = elm_dict
 
     @classmethod
-    def reference_exists(self, element, interactive=False):
+    def reference_exists(cls, element, interactive=False):
         ref_elm, reference = GalleryDict.get_reference(element)
         if not reference and interactive:
             dlg = wx.MessageDialog(
                 None,
-                "Add the " + self.reference_label + " first.",
-                "The " + self.reference_label + " of this element is missing",
+                "Add the " + cls.reference_label + " first.",
+                "The " + cls.reference_label + " of this element is missing",
                 wx.OK | wx.ICON_WARNING
             )
             dlg.ShowModal()
@@ -238,78 +238,78 @@ class GalleryDict(object):
         return ref_elm, reference
 
     @classmethod
-    def get_key(self, element, interactive=False):
-        if not self.key_label:
+    def get_key(cls, element, interactive=False):
+        if not cls.key_label:
             return None, None, None, None
         ref_elm, reference = GalleryDict.reference_exists(element, interactive)
         if not reference:
             return None, None, None, None
-        key_elm = self.key_label.lower().replace(" ", "_")
-        if (reference not in self.key_descr_dict or
-                key_elm not in self.key_descr_dict[reference]):
+        key_elm = cls.key_label.lower().replace(" ", "_")
+        if (reference not in cls.key_descr_dict or
+                key_elm not in cls.key_descr_dict[reference]):
             return ref_elm, reference, key_elm, ""
-        return ref_elm, reference, key_elm, self.key_descr_dict[
+        return ref_elm, reference, key_elm, cls.key_descr_dict[
             reference][key_elm]
 
     @classmethod
-    def set_key(self, element, key):
+    def set_key(cls, element, key):
         _, reference, key_elm, prev_key = GalleryDict.get_key(
             element, interactive=True)
-        if prev_key == None:
+        if prev_key is None:
             return None
-        if reference not in self.key_descr_dict:
-            self.key_descr_dict[reference] = {}
-        self.key_descr_dict[reference][key_elm] = key
+        if reference not in cls.key_descr_dict:
+            cls.key_descr_dict[reference] = {}
+        cls.key_descr_dict[reference][key_elm] = key
 
     @classmethod
-    def get_description(self, element, interactive=False):
-        if not self.description_label:
+    def get_description(cls, element, interactive=False):
+        if not cls.description_label:
             return None, None, None, None
         ref_elm, reference = GalleryDict.reference_exists(element, interactive)
         if not reference:
             return None, None, None, None
-        description_elm = self.description_label.lower().replace(" ", "_")
-        if (reference not in self.key_descr_dict or
-                description_elm not in self.key_descr_dict[reference]):
+        description_elm = cls.description_label.lower().replace(" ", "_")
+        if (reference not in cls.key_descr_dict or
+                description_elm not in cls.key_descr_dict[reference]):
             return ref_elm, reference, description_elm, ""
-        return ref_elm, reference, description_elm, self.key_descr_dict[
+        return ref_elm, reference, description_elm, cls.key_descr_dict[
             reference][description_elm]
 
     @classmethod
-    def set_description(self, element, description):
+    def set_description(cls, element, description):
         _, reference, description_elm, prev_descr = GalleryDict.get_description(
             element, interactive=True)
-        if prev_descr == None:
+        if prev_descr is None:
             return None
-        if reference not in self.key_descr_dict:
-            self.key_descr_dict[reference] = {}
-        self.key_descr_dict[reference][description_elm] = description
+        if reference not in cls.key_descr_dict:
+            cls.key_descr_dict[reference] = {}
+        cls.key_descr_dict[reference][description_elm] = description
 
     @classmethod
-    def delete(self, element):
-        del self.gallery_history[element]
+    def delete(cls, element):
+        del cls.gallery_history[element]
 
     @classmethod
-    def pop(self, element):
-        return self.gallery_history.pop(element, None)
+    def pop(cls, element):
+        return cls.gallery_history.pop(element, None)
 
     @classmethod
-    def keys(self):
-        return self.gallery_history.keys()
+    def keys(cls):
+        return cls.gallery_history.keys()
 
     @classmethod
-    def dump(self, items, file):
+    def dump(cls, items, file):
         gallery_history = OrderedDict()
         for i in items:
-            gallery_history[i] = self.gallery_history[i]
-        return pickle.dump([gallery_history, self.key_descr_dict], file,
-            protocol=pickle.HIGHEST_PROTOCOL)
+            gallery_history[i] = cls.gallery_history[i]
+        return pickle.dump([gallery_history, cls.key_descr_dict], file,
+                           protocol=pickle.HIGHEST_PROTOCOL)
 
     @classmethod
-    def load_dict(self, file):
+    def load_dict(cls, file):
         try:
             gallery_history, key_descr_dict = pickle.load(file)
-            self.key_descr_dict = {**self.key_descr_dict, **key_descr_dict}
+            cls.key_descr_dict = {**cls.key_descr_dict, **key_descr_dict}
         except ValueError:
             file.seek(0)
             gallery_history = pickle.load(file)
@@ -327,12 +327,12 @@ class RefKeyDescrFrame(wx.Frame):
     def __init__(
             self,
             parent,
-            ID,
+            descr_id,
             title,
             pos=wx.DefaultPosition,
             style=(wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
-                ^ wx.RESIZE_BORDER):
-        wx.Frame.__init__(self, parent, ID, title, pos, style=style)
+                  ^ wx.RESIZE_BORDER):
+        wx.Frame.__init__(self, parent, descr_id, title, pos, style=style)
         self.parent = parent
         self.grid = EditableGrid(self)
         self.grid.CreateGrid(10, 3)
@@ -379,8 +379,8 @@ class RefKeyDescrFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.on_completed_form)
 
     def on_key_up(self, event):
-        keyCode = event.GetKeyCode()
-        if keyCode == wx.WXK_ESCAPE:
+        key_code = event.GetKeyCode()
+        if key_code == wx.WXK_ESCAPE:
             if time.monotonic() - self.monotonic < 2:
                 self.on_completed_form(event)
             self.monotonic = time.monotonic()
@@ -471,7 +471,7 @@ class EditableGrid(wx.grid.Grid):
                  (wx.NewId(), "Paste", self.paste),
                  None]
 
-        # Select if right clicked row or column is not in selection
+        # Select if right-clicked row or column is not in selection
         if event.GetRow() > -1:
             if not self.IsInSelection(row=event.GetRow(), col=1):
                 self.SelectRow(event.GetRow())
@@ -730,26 +730,26 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
     CONSTRUCT_FORMAT = "construct_format"
 
     def __init__(
-        self,
-        parent,
-        load_menu_label="Gallery Data",
-        clear_label="Gallery",
-        reference_label=None,
-        key_label=None,
-        description_label=None,
-        added_data_label="",
-        loadfile=None,
-        gallery_descriptor=None,
-        ordered_samples=None,
-        ref_key_descriptor=None,
-        default_gallery_selection=0,
-        gallery_descriptor_var=None,
-        construct_format_var=None,
-        col_name_width=None,
-        col_type_width=None,
-        col_value_width=None,
-        run_shell_plugin=True,
-        run_hex_editor_plugins=True
+            self,
+            parent,
+            load_menu_label="Gallery Data",
+            clear_label="Gallery",
+            reference_label=None,
+            key_label=None,
+            description_label=None,
+            added_data_label="",
+            loadfile=None,
+            gallery_descriptor=None,
+            ordered_samples=None,
+            ref_key_descriptor=None,
+            default_gallery_selection=0,
+            gallery_descriptor_var=None,
+            construct_format_var=None,
+            col_name_width=None,
+            col_type_width=None,
+            col_value_width=None,
+            run_shell_plugin=True,
+            run_hex_editor_plugins=True
     ):
         super().__init__(parent)
 
@@ -766,10 +766,10 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.loadfile = loadfile
         self.default_gallery_selection = default_gallery_selection
         self.gallery_descriptor_var = (
-            gallery_descriptor_var or self.GALLERY_DESCRIPTOR
+                gallery_descriptor_var or self.GALLERY_DESCRIPTOR
         )
         self.construct_format_var = (
-            construct_format_var or self.CONSTRUCT_FORMAT
+                construct_format_var or self.CONSTRUCT_FORMAT
         )
         self.col_name_width = col_name_width
         self.col_type_width = col_type_width
@@ -857,32 +857,38 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.gallery_selector_lbx.Bind(
             wx.EVT_LEAVE_WINDOW, self.on_leave_window
         )
-        self.gallery_selector_lbx.Bind(wx.EVT_LEFT_DCLICK,
-            self.on_doubleclick_not_selected_log)
+        self.gallery_selector_lbx.Bind(
+            wx.EVT_LEFT_DCLICK, self.on_doubleclick_not_selected_log
+        )
         self.gallery_selector_lbx.Bind(wx.EVT_KEY_DOWN, self.on_key_down_log)
-        self.gallery_selector_lbx.Bind(wx.EVT_LISTBOX_DCLICK,
-            self.on_doubleclick_log)
+        self.gallery_selector_lbx.Bind(
+            wx.EVT_LISTBOX_DCLICK, self.on_doubleclick_log
+        )
         self.gallery_selector_lbx.Bind(wx.EVT_RIGHT_DOWN, self.on_right_clicked)
 
         self.control_position = self.vsizer.GetItemCount()
 
         # "Load from file" / "Save to file" buttons
-        controlSizer = wx.StaticBoxSizer(
+        control_sizer = wx.StaticBoxSizer(
             wx.HORIZONTAL, self, label=self.load_menu_label)
 
-        self.load_data_file_btn = wx.Button(self, wx.ID_ANY,
-            label="Load from file", size=wx.Size(115, -1))
-        self.load_data_file_btn.Bind(wx.EVT_BUTTON,
-            self.on_load_data_file_clicked)
-        controlSizer.Add(self.load_data_file_btn, 1, wx.EXPAND | wx.RIGHT, 5)
+        self.load_data_file_btn = wx.Button(
+            self, wx.ID_ANY, label="Load from file", size=wx.Size(115, -1)
+        )
+        self.load_data_file_btn.Bind(
+            wx.EVT_BUTTON, self.on_load_data_file_clicked
+        )
+        control_sizer.Add(self.load_data_file_btn, 1, wx.EXPAND | wx.RIGHT, 5)
 
-        self.save_data_file_btn = wx.Button(self, wx.ID_ANY,
-            label="Save to file", size=wx.Size(115, -1))
-        self.save_data_file_btn.Bind(wx.EVT_BUTTON,
-            self.on_save_data_file_clicked)
-        controlSizer.Add(self.save_data_file_btn, 1, wx.EXPAND | wx.LEFT, 5)
+        self.save_data_file_btn = wx.Button(
+            self, wx.ID_ANY, label="Save to file", size=wx.Size(115, -1)
+        )
+        self.save_data_file_btn.Bind(
+            wx.EVT_BUTTON, self.on_save_data_file_clicked
+        )
+        control_sizer.Add(self.save_data_file_btn, 1, wx.EXPAND | wx.LEFT, 5)
 
-        self.vsizer.Add(controlSizer, 0, wx.EXPAND | wx.CENTER, c_sep)
+        self.vsizer.Add(control_sizer, 0, wx.EXPAND | wx.CENTER, c_sep)
         self.vsizer.AddSpacer(2)
 
         # "Edit ref. attributes" button
@@ -917,8 +923,9 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.vsizer.Add(
             self.clear_element_data_btn, 0, wx.ALL | wx.EXPAND, c_sep
         )
-        self.clear_element_data_btn.Bind(wx.EVT_BUTTON,
-            self.on_clear_element_data_clicked)
+        self.clear_element_data_btn.Bind(
+            wx.EVT_BUTTON, self.on_clear_element_data_clicked
+        )
 
         if ref_key_descriptor:
             GalleryDict.update_key_descr_dict(ref_key_descriptor)
@@ -939,11 +946,11 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self.reload_btn.Bind(
                 wx.EVT_BUTTON, lambda event: self.load_construct_selector())
 
-        controlSizer = wx.BoxSizer(wx.HORIZONTAL)
+        control_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         if run_shell_plugin:
-            self.py_shell(controlSizer)  # Start PyShell plugin
-        controlSizer.AddSpacer(4)
+            self.py_shell(control_sizer)  # Start PyShell plugin
+        control_sizer.AddSpacer(4)
 
         # Add "-", "0", "+" buttons
         self.zoomOut = wx.Button(
@@ -951,24 +958,24 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         )
         self.zoomOut.SetToolTip("Reduce the column size of the right panel")
         self.zoomOut.Bind(wx.EVT_BUTTON, lambda event: self.zoom(-1))
-        controlSizer.Add(self.zoomOut, 1, wx.EXPAND | wx.RIGHT, c_sep)
+        control_sizer.Add(self.zoomOut, 1, wx.EXPAND | wx.RIGHT, c_sep)
 
         self.zoomReset = wx.Button(
             self, wx.ID_ANY, label="0", style=wx.BU_EXACTFIT
         )
         self.zoomReset.SetToolTip("Reset the column size of the right panel")
         self.zoomReset.Bind(wx.EVT_BUTTON, lambda event: self.zoom(None))
-        controlSizer.Add(self.zoomReset, 1, wx.EXPAND | wx.CENTER, c_sep)
+        control_sizer.Add(self.zoomReset, 1, wx.EXPAND | wx.CENTER, c_sep)
 
         self.zoomIn = wx.Button(
             self, wx.ID_ANY, label="+", style=wx.BU_EXACTFIT
         )
         self.zoomIn.SetToolTip("Increase the column size of the right panel")
         self.zoomIn.Bind(wx.EVT_BUTTON, lambda event: self.zoom(+1))
-        controlSizer.Add(self.zoomIn, 1, wx.EXPAND | wx.LEFT, c_sep)
+        control_sizer.Add(self.zoomIn, 1, wx.EXPAND | wx.LEFT, c_sep)
 
         # Add all horizontal buttons
-        self.vsizer.Add(controlSizer, 0, wx.ALL | wx.EXPAND, c_sep)
+        self.vsizer.Add(control_sizer, 0, wx.ALL | wx.EXPAND, c_sep)
 
         self.sizer.Add(self.vsizer, 0, wx.ALL | wx.EXPAND, c_sep)
 
@@ -1008,18 +1015,18 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self.status_message("Empty list")
             self.previous_selection = None
 
-        # Add calback fired each time binary is changed
+        # Add callback fired each time binary is changed
         self.construct_hex_editor.hex_panel.hex_editor.on_binary_changed.append(
             self.on_edited_value
         )
 
         self.change_gallery_selection()
-        
+
         if self.loadfile:
             for i in self.loadfile:
                 try:
                     gallery_history = GalleryDict.load_dict(i)
-                except IOError as e:
+                except IOError:
                     wx.LogError(
                         "Invalid format in file '%s'." % i.name)
                     return
@@ -1039,10 +1046,10 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         font_c = wx.Font(wx.FontInfo(8))
         head_txt_colr = wx.Colour('brown')
         head_bac_colr = dvc.GetClassDefaultAttributes().colBg
-        attr = wx.ItemAttr(head_txt_colr,head_bac_colr,font_c)
+        attr = wx.ItemAttr(head_txt_colr, head_bac_colr, font_c)
         dvc.SetHeaderAttr(attr)
 
-        self.GetTopLevelParent().SetMinSize((700, 320));
+        self.GetTopLevelParent().SetMinSize((700, 320))
 
     def zoom(self, n):
         dvc = self.construct_hex_editor.construct_editor._dvc
@@ -1075,16 +1082,16 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             self.pyshell.Destroy()
 
     def on_uncaught_exception(self,
-            etype: t.Type[BaseException],
-            value: BaseException,
-            trace: TracebackType):
+                              etype: t.Type[BaseException],
+                              value: BaseException,
+                              trace: TracebackType):
         """
         Handler for all unhandled exceptions.
         :param `etype`: the exception type (`SyntaxError`, `ZeroDivisionError`, etc...);
         :type `etype`: `Exception`
         :param string `value`: the exception error message;
-        :param string `trace`: the traceback header, if any (otherwise, it prints the
-        standard Python header: ``Traceback (most recent call last)``.
+        :param string `trace`: the traceback header, if any otherwise, it prints
+                       the standard Python header: ``Traceback (most recent call last)``.
         """
         dial = WxExceptionDialog(
             None, "Uncaught Exception...", ExceptionInfo(etype, value, trace)
@@ -1147,7 +1154,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                             f"'{construct_module.__file__}' "
                             "is not a 'construct' structure.",
                             "Cannot load Python module",
-                               wx.ICON_ERROR | wx.CENTRE | wx.OK
+                            wx.ICON_ERROR | wx.CENTRE | wx.OK
                         )
                         return False
                     gallery_descr = {
@@ -1162,7 +1169,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                         f"'{self.gallery_descriptor_var}' in "
                         f"{construct_module.__file__}",
                         "Cannot load Python module",
-                           wx.ICON_ERROR | wx.CENTRE | wx.OK
+                        wx.ICON_ERROR | wx.CENTRE | wx.OK
                     )
                     return False
             self.gallery_descriptor.gallery_descriptor = gallery_descr
@@ -1177,7 +1184,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         GalleryDict.set_fixed_contextkw(
             gallery_descr[default_construct].contextkw)
         if not issubclass(
-            type(gallery_descr[default_construct].construct), cs.Construct
+                type(gallery_descr[default_construct].construct), cs.Construct
         ):
             wx.LogError(
                 "Item '%s' in '%s' does not define a 'construct' structure." % (
@@ -1206,10 +1213,10 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                 wx.OK | wx.ICON_WARNING).ShowModal()
             return
         with wx.FileDialog(
-            self,
-            "Filename to save with pickle format",
-            wildcard="Pickle files (*.pickle)|*.pickle|All files|*.*",
-            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+                self,
+                "Filename to save with pickle format",
+                wildcard="Pickle files (*.pickle)|*.pickle|All files|*.*",
+                style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
         ) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -1254,8 +1261,10 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     'Keep previously modified data?',
                     'You need to confirm changing values',
                     wx.YES_NO | wx.ICON_WARNING).ShowModal() == wx.ID_YES):
-                GalleryDict.set(self.previous_selection,
-                    self.construct_hex_editor.binary)
+                GalleryDict.set(
+                    self.previous_selection,
+                    self.construct_hex_editor.binary
+                )
             else:
                 self.construct_hex_editor.contextkw = GalleryDict.get_contextkw(
                     self.previous_selection)
@@ -1266,10 +1275,10 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.confirm_changed_data()
         self.confirm_added_data()
         with wx.FileDialog(
-            self,
-            "Open data file (pickle format)",
-            wildcard="Pickle files (*.pickle)|*.pickle|All files|*.*",
-            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
+                self,
+                "Open data file (pickle format)",
+                wildcard="Pickle files (*.pickle)|*.pickle|All files|*.*",
+                style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
         ) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -1280,7 +1289,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             try:
                 with open(pathname, "rb") as file:
                     gallery_history = GalleryDict.load_dict(file)
-            except IOError as e:
+            except IOError:
                 wx.LogError("Cannot open file '%s'." % str(pathname))
                 return
             except Exception as e:
@@ -1300,8 +1309,10 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             title = self.GetTopLevelParent().GetTitle()
             self.GetTopLevelParent().SetTitle(pathname + " | " + title)
         GalleryDict.update_dict(gallery_history)
-        self.status_message(f"Loaded {len(gallery_history)} elements. "
-            f"Total of {GalleryDict.len()} elements available.")
+        self.status_message(
+            f"Loaded {len(gallery_history)} elements. "
+            f"Total of {GalleryDict.len()} elements available."
+        )
         self.gallery_selector_lbx.Clear()
         for i in GalleryDict.keys():
             if i not in self.gallery_selector_lbx.GetItems():
@@ -1321,8 +1332,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         frame = RefKeyDescrFrame(
             self, -1, self.reference_label + " Attribute Editor")
         frame.Show(True)
-        gridSize = frame.GetVirtualSize()
-        frame.SetSize(gridSize)
+        grid_size = frame.GetVirtualSize()
+        frame.SetSize(grid_size)
         frame.Fit()
         MakeModal(frame)
 
@@ -1379,9 +1390,11 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                 self.gallery_selector_lbx.GetStringSelection())
             if GalleryDict.len() == 0:
                 self.status_message(self.added_data_label)
-            GalleryDict.set(self.dlg_as.GetValue(),
+            GalleryDict.set(
+                self.dlg_as.GetValue(),
                 self.construct_hex_editor.binary,
-                reference=org_reference)
+                reference=org_reference
+            )
             self.gallery_selector_lbx.Append(self.dlg_as.GetValue())
             self.previous_selection = self.dlg_as.GetValue()
             self.gallery_selector_lbx.SetSelection(
@@ -1460,11 +1473,15 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
             _, org_reference = GalleryDict.get_reference(
                 self.gallery_selector_lbx.GetStringSelection())
             if dlg.GetValue() != self.gallery_selector_lbx.GetStringSelection():
-                GalleryDict.set(dlg.GetValue(),
+                GalleryDict.set(
+                    dlg.GetValue(),
                     self.construct_hex_editor.binary,
-                    reference=org_reference)
-                self.gallery_selector_lbx.InsertItems([dlg.GetValue()],
-                    self.gallery_selector_lbx.GetSelection())
+                    reference=org_reference
+                )
+                self.gallery_selector_lbx.InsertItems(
+                    [dlg.GetValue()],
+                    self.gallery_selector_lbx.GetSelection()
+                )
         dlg.Destroy()
 
     def move_selection_up(self):
@@ -1632,10 +1649,6 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         event.Skip()
         if not self.construct_hex_editor:
             return
-        #print("KeyCode: %d" % event.GetKeyCode())
-        #print("ListBox Item Index: %d" % event.GetEventObject().GetSelection())
-        #print("ListBox count:", event.GetEventObject().GetCount())
-        #print("log count:", GalleryDict.len())
         if event.ShiftDown():
             return
         if event.AltDown():
@@ -1682,9 +1695,11 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     GalleryDict.get_binary(
                         self.gallery_selector_lbx.GetStringSelection()))
                 self.previous_selection = self.construct_hex_editor.binary
-                self.status_message("Selected element n. " +
+                self.status_message(
+                    "Selected element n. " +
                     str(index + 1) + u': \u275d' +
-                    self.gallery_selector_lbx.GetStringSelection() + u'\u275e')
+                    self.gallery_selector_lbx.GetStringSelection() + u'\u275e'
+                )
             else:
                 obj.SetSelection(index - 1)
                 self.construct_hex_editor.contextkw = GalleryDict.get_contextkw(
@@ -1693,9 +1708,11 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     GalleryDict.get_binary(
                         self.gallery_selector_lbx.GetStringSelection()))
                 self.previous_selection = self.construct_hex_editor.binary
-                self.status_message("Selected element n. " +
+                self.status_message(
+                    "Selected element n. " +
                     str(index) + u': \u275d' +
-                    self.gallery_selector_lbx.GetStringSelection() + u'\u275e')
+                    self.gallery_selector_lbx.GetStringSelection() + u'\u275e'
+                )
         else:
             if GalleryDict.len() == 0:
                 self.status_message("Empty list")
@@ -1765,17 +1782,17 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         if not isinstance(obj, wx.ListBox):
             return
         item = obj.HitTest(event.GetPosition())
-        if item < 0:
+        if item == wx.NOT_FOUND:
             self.add_selection()
             return
         self.gallery_selector_lbx.SetSelection(item)
-        #value = self.gallery_selector_lbx.GetString(item)
+        # value = self.gallery_selector_lbx.GetString(item)
         popup_menu = wx.Menu()
         for menu in self.build_list_context_menu(obj):
             if menu is None:
                 popup_menu.AppendSeparator()
                 continue
-            if menu.toggle_state != None:  # checkbox boolean state
+            if menu.toggle_state is not None:  # checkbox boolean state
                 item: wx.MenuItem = popup_menu.AppendCheckItem(menu.wx_id, menu.name)
                 item.Check(menu.toggle_state)
             else:
@@ -1787,7 +1804,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         popup_menu.Destroy()
 
     def build_list_context_menu(
-        self, obj
+            self, obj
     ) -> t.List[t.Optional[wx_hex_editor.ContextMenuItem]]:
         """Build the context menu. Can be overridden."""
 
@@ -1899,16 +1916,18 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                         self,
                         'Save previously modified data?',
                         'Data not saved',
-                        wx.YES_NO | wx.ICON_WARNING).ShowModal() == wx.ID_YES):
+                        wx.YES_NO | wx.ICON_WARNING
+                ).ShowModal() == wx.ID_YES
+                ):
                     GalleryDict.set(self.previous_selection,
-                        self.construct_hex_editor.binary)
+                                    self.construct_hex_editor.binary)
             elif (self.previous_selection is None and
-                    GalleryDict.exists(
-                        self.gallery_selector_lbx.GetStringSelection()) and
-                    GalleryDict.get_binary(
-                            self.gallery_selector_lbx.GetStringSelection()) !=
-                        self.construct_hex_editor.binary and
-                    self.construct_hex_editor.binary != b''):
+                  GalleryDict.exists(
+                      self.gallery_selector_lbx.GetStringSelection()) and
+                  GalleryDict.get_binary(
+                      self.gallery_selector_lbx.GetStringSelection()) !=
+                  self.construct_hex_editor.binary and
+                  self.construct_hex_editor.binary != b''):
                 if (wx.MessageDialog(
                         self,
                         'Replace saved data with new value?',
@@ -1923,8 +1942,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     GalleryDict.exists(
                         self.gallery_selector_lbx.GetStringSelection()) and
                     GalleryDict.get_binary(
-                            self.gallery_selector_lbx.GetStringSelection()) !=
-                        self.construct_hex_editor.binary):
+                        self.gallery_selector_lbx.GetStringSelection()) !=
+                    self.construct_hex_editor.binary):
                 if (wx.MessageDialog(
                         self,
                         'Replace saved data with new value?',
@@ -1952,13 +1971,13 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         )
 
     def add_data(self,
-            data,
-            reference=None,
-            label=None,
-            append_label=None,
-            discard_duplicates=False,
-            date_separator=" ",
-            duplicate_separator="-"):
+                 data,
+                 reference=None,
+                 label=None,
+                 append_label=None,
+                 discard_duplicates=False,
+                 date_separator=" ",
+                 duplicate_separator="-"):
         if not self.construct_hex_editor:
             return False
         if not self.construct_hex_editor.IsShown():

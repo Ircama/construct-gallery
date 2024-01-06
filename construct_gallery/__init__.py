@@ -7,4 +7,5 @@ from .config_editor import ConfigEditorPanel
 try:
     from .bleak_scanner_construct import BleakScannerConstruct
 except ImportError:
-    pass
+    class BleakScannerConstruct:
+        BLEAK_IS_USED = False  # it means invalid class and black not installed

@@ -23,7 +23,7 @@ _After pushing the last commit_, add a local tag (shall be added AFTER the commi
 
 ```shell
 git tag # list local tags
-git tag v1.0.0
+git tag v2.0.0
 ```
 
 Notes:
@@ -34,7 +34,7 @@ Notes:
 Push this tag to the origin, which starts the PyPI publishing workflow (GitHub Action):
 
 ```shell
-git push origin v1.0.0
+git push origin v2.0.0
 git ls-remote --tags https://github.com/Ircama/construct-gallery # list remote tags
 ```
 
@@ -76,8 +76,8 @@ python3 -m pip uninstall -y construct-gallery
 
 ```shell
 git tag # list tags
-git tag -d v1.0.0 # remove local tag
-git push --delete origin v1.0.0 # remove remote tag
+git tag -d v2.0.0 # remove local tag
+git push --delete origin v2.0.0 # remove remote tag
 git ls-remote --tags https://github.com/Ircama/construct-gallery # list remote tags
 ```
 

@@ -13,7 +13,7 @@ class CustomLogHandler(logging.Handler):
         self.handler(msg.translate(str.maketrans({"%":  r"%%"})))
 
 
-class WxLogging():
+class WxLogging:
     log = None
 
     def __init__(self, frame, logger):
