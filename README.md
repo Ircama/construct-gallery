@@ -274,7 +274,7 @@ gallery_descriptor = {
 
 As `construct` accepts keyword arguments passed through the [`_params`](https://construct.readthedocs.io/en/latest/basics.html#hidden-context-entries) entry, also *construct-editor* and *construct-gallery* support them.
 
-*construct-gallery* can use the same `contextkw` global form defined *construct-editor*, or up to three variables.
+*construct-gallery* can use the same `contextkw` global form defined by *construct-editor*, or up to three variables (reference, key and description).
 
 `contextkw` is a dictionary of *key: value* pairs of items to be passed to `construct` as arguments.
 
@@ -314,7 +314,7 @@ gallery_descriptor = {
 
 In the previous form which uses the *example_bytes* attribute, the keywords defined in *contextkw* are globally available for all samples.
 
-In addition, *construct_gallery* allows using the *example_dict* attribute, which associates a reference to each byte sequence:
+In addition, *construct_gallery* allows using the *example_dict* attribute, which associates a reference ("reference", with customizable key label) to each byte sequence("binary", fixed key):
 
 ```python
 from collections import OrderedDict
@@ -356,7 +356,7 @@ example_key={
 
 All these three values (reference, key, description) are available through the *_params* entry and their labels are configurable using `-R`, `-K` and `-D` options, or using the *reference_label*, *key_label* and *description_label* parameters of the *ConstructGallery()* API. All are strings. *reference* and *key* need to include hex values. *description* allows free format. Typically, *reference* is mapped to a MAC address, while *key* is mapped to an encryption hex string.
 
-The following is a typical structure of *gallery_descriptor* when using *example_dict* and *example_key* in *GalleryItem()*:
+The following is a typical structure of the *gallery_descriptor* variable when using *example_dict* and *example_key* in *GalleryItem()*:
 
 ```python
 from collections import OrderedDict
@@ -377,7 +377,7 @@ gallery_descriptor = {
 }
 ```
 
-`example_dict` is an ordered dictionary of ordered dictionaries; the form is a collection of `"label": dict_item` key-value elements, where *dict_item* is in turn a collection of `"binary": bytes, "reference": string` elements. The key "binary" in *example_dict* is fixed. The label *reference* can be customized through the *reference_label* parameter; for instance `reference_label="MAC address"`.
+`example_dict` is an ordered dictionary of ordered dictionaries; the form is a collection of `"label": dict_item` key-value elements, where *dict_item* is in turn a collection of `"binary": bytes, "reference": string` elements. The key *"binary"* is fixed. The label *reference* can be customized through the *reference_label* parameter; for instance `reference_label="MAC address"`.
 
 `example_key` is a dictionary of *"reference": { key, description }*.
 
