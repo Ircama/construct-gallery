@@ -196,7 +196,7 @@ def gallery_app(construct_module, args):
                     "Int8sl" / cs.Int8sl
                 ),
                 clear_log=True,
-                example_bytes=OrderedDict(  # OrderedDict format
+                ordered_sample_bytes=OrderedDict(  # OrderedDict format
                     [
                         ('A number', bytes.fromhex(
                             "15 81 e9 7d f4 10 22 11 d2 02 96 49 39 30 0c")),
@@ -212,7 +212,7 @@ def gallery_app(construct_module, args):
                     "Int8ub" / cs.Int8ub
                 ),
                 clear_log=True,
-                example_bytes={  # dictionary format
+                ordered_sample_bytes={  # dictionary format
                     "A number": bytes.fromhex("04 d2 7b"),
                     "All 1": bytes.fromhex("00 01 01"),
                     "All 0": bytes(2 + 1),
@@ -231,7 +231,7 @@ def gallery_app(construct_module, args):
                     construct=sample_modules[module].gallery_item.construct,
                     contextkw=sample_modules[module].gallery_item.contextkw,
                     clear_log=True,
-                    example_bytes=sample_modules[
+                    ordered_sample_bytes=sample_modules[
                         module].gallery_item.example_binarys
                 ) for module in sample_modules
             }

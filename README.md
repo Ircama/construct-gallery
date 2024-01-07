@@ -168,20 +168,20 @@ class GalleryItem:
     construct: "cs.Construct[t.Any, t.Any]"
     clear_log: bool = False
     contextkw: t.Dict[str, t.Any] = dataclasses.field(default_factory=dict)
-    example_bytes: t.OrderedDict[str, bytes] = dataclasses.field(default_factory=dict)
-    example_dict: t.OrderedDict[str, dict] = dataclasses.field(default_factory=dict)
-    example_key: t.Dict[str, dict] = dataclasses.field(default_factory=dict)
+    ordered_sample_bytes: t.OrderedDict[str, bytes] = dataclasses.field(default_factory=dict)
+    ordered_sample_bin_ref: t.OrderedDict[str, dict] = dataclasses.field(default_factory=dict)
+    ref_key_descriptor: t.Dict[str, dict] = dataclasses.field(default_factory=dict)
 ```
 
 The `construct` attribute is mandatory and must be referred to a `construct` definition.
 
-*GalleryItem* can collect `example_bytes`, which is a dictionary or ordered dictionary of bytes; this is the simplest mode and consists of a collection of `"label": bytes` key-value pairs.
+*GalleryItem* can collect `ordered_sample_bytes`, which is a dictionary or ordered dictionary of bytes; this is the simplest mode and consists of a collection of `"label": bytes` key-value pairs.
 
 The `clear_log` attribute is optional: when set to `True`, all related samples are deleted each time a `construct` is changed in the gallery through the GUI; otherwise, new samples are added at the bottom of the sample list.
 
-All other attributes available with *gallery_descriptor* (*contextkw*, *example_dict*, *example_key*) are described later.
+All other attributes available with *gallery_descriptor* (*contextkw*, *ordered_sample_bin_ref*, *ref_key_descriptor*) are described later.
 
-Example of *GalleryItem* using the basic dictionary format of the `example_bytes` samples:
+Example of *GalleryItem* using the basic dictionary format of the `ordered_sample_bytes` samples:
 
 ```python
 import construct as cs
@@ -193,7 +193,7 @@ GalleryItem(
         "Int8ub" / cs.Int8ub
     ),
     clear_log=True,
-    example_bytes={  # dictionary format
+    ordered_sample_bytes={  # dictionary format
         "A number": bytes.fromhex("04 d2 7b"),
         "All 1": bytes.fromhex("00 01 01"),
         "All 0": bytes(2 + 1),
@@ -206,7 +206,7 @@ Example of ordered dictionary:
 ```python
 from collections import OrderedDict
 
-example_dict=OrderedDict(
+ordered_sample_bin_ref=OrderedDict(
     [
         (
             "item 1",
@@ -244,7 +244,7 @@ gallery_descriptor = {
             "counter" / Int8ul
         ),
         clear_log=True,
-        example_bytes={
+        ordered_sample_bytes={
             'Numbers 20 and 12': bytes.fromhex("14 00 0c"),
             'Numbers 21 and 13': bytes.fromhex("15 00 0d"),
         }
@@ -257,7 +257,7 @@ gallery_descriptor = {
             )
         ),
         clear_log=True,
-        example_bytes=OrderedDict(  # OrderedDict format
+        ordered_sample_bytes=OrderedDict(  # OrderedDict format
             [
                 ('Ten numbers', bytes.fromhex(
                     "02 08 0c 70 08 0d de 08 0e 4c 09 0f ba 09 10")),
@@ -300,7 +300,7 @@ gallery_descriptor = {
             'my_string' / Computed(this._params.my_string),
         ),
         clear_log=True,
-        example_bytes={
+        ordered_sample_bytes={
             'Numbers 20.5 and 12': bytes.fromhex("14 50 0c"),
             'Numbers 21.4 and 13': bytes.fromhex("98 53 0d"),
         },
@@ -312,14 +312,14 @@ gallery_descriptor = {
 }
 ```
 
-In the previous form which uses the *example_bytes* attribute, the keywords defined in *contextkw* are globally available for all samples.
+In the previous form which uses the *ordered_sample_bytes* attribute, the keywords defined in *contextkw* are globally available for all samples.
 
-In addition, *construct_gallery* allows using the *example_dict* attribute, which associates a reference ("reference", with customizable key label) to each byte sequence("binary", fixed key):
+In addition, *construct_gallery* allows using the *ordered_sample_bin_ref* attribute, which associates a reference ("reference", with customizable key label) to each byte sequence("binary", fixed key):
 
 ```python
 from collections import OrderedDict
 
-example_dict=OrderedDict(
+ordered_sample_bin_ref=OrderedDict(
     [
         (
             "One",
@@ -339,10 +339,10 @@ example_dict=OrderedDict(
 )
 ```
 
-Each reference can be mapped to other two values through the `example_key` attribute:
+Each reference can be mapped to other two values through the `ref_key_descriptor` attribute:
 
 ```python
-example_key={
+ref_key_descriptor={
     "AA": {
         "key": "aaaaaaaa",
         "description": "first",
@@ -358,7 +358,7 @@ All these three values (reference, key, description) are available through the *
 
 Specifically, `-R` (*reference_label*) is always mandatory. `-K` and `-D`(*key_label* and *description_label*) are required when key and description values are also needed. As an example, the first is mapped to the MAC address, the second to an encryption hex string and the third to an optional description text.
 
-The following is a typical structure of the *gallery_descriptor* variable when using *example_dict* and *example_key* in *GalleryItem()*:
+The following is a typical structure of the *gallery_descriptor* variable when using *ordered_sample_bin_ref* and *ref_key_descriptor* in *GalleryItem()*:
 
 ```python
 from collections import OrderedDict
@@ -368,10 +368,10 @@ gallery_descriptor = {
     "item": GalleryItem(
         construct=...,
         clear_log=True,
-        example_dict=OrderedDict(
+        ordered_sample_bin_ref=OrderedDict(
             ...
         ),
-        example_key={
+        ref_key_descriptor={
             ...
         }
     ),
@@ -379,13 +379,13 @@ gallery_descriptor = {
 }
 ```
 
-`example_dict` is an ordered dictionary of ordered dictionaries; the form is a collection of `"label": dict_item` key-value elements, where *dict_item* is in turn a collection of `"binary": bytes, "reference": string` elements. The key *"binary"* is fixed. The label *reference* can be customized through the *reference_label* parameter; for instance `reference_label="MAC address"`.
+`ordered_sample_bin_ref` is an ordered dictionary of ordered dictionaries; the form is a collection of `"label": dict_item` key-value elements, where *dict_item* is in turn a collection of `"binary": bytes, "reference": string` elements. The key *"binary"* is fixed. The label *reference* can be customized through the *reference_label* parameter; for instance `reference_label="MAC address"`.
 
-`example_key` is a dictionary of *"reference": { key, description }*.
+`ref_key_descriptor` is a dictionary of *"reference": { key, description }*.
 
-*..._label* parameters substitute spaces with underscores and uppercase letters with lowercase. Example, if `reference_label="MAC address"`, then the reference will be `"mac_address"`.
+In `ref_key_descriptor`, the actual name of "key" is determined by the `key_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Examples: if `key_label="Bindkey"`, then the key will be `"bindkey"`. If `reference_label="MAC address"`, then the reference will be `"mac_address"`. Same for the *description* label (ref. `description_label`).
 
-When using the API, the *gallery_descriptor* parameter is used to load the related structure; in addition, *ordered_samples* and *ref_key_descriptor* are available to separately load *example_dict* and *example_key* data, if *gallery_descriptor* does not include them.
+When using the API, the *gallery_descriptor* parameter is used to load the related structure; in addition, *ordered_sample_bin_ref* and *ref_key_descriptor* are available to separately load *ordered_sample_bin_ref* and *ref_key_descriptor* data, if *gallery_descriptor* does not include them.
 
 The following diagram describes the relationship among the various attributes:
 
@@ -399,28 +399,28 @@ erDiagram
     "GalleryItem" {
         Construct construct
         boolean clear_log "(optional)"
-        dict example_bytes "(optional)"
-        dict example_dict "(optional)"
-        dict example_key "(optional)"
+        dict ordered_sample_bytes "(optional)"
+        dict ordered_sample_bin_ref "(optional)"
+        dict ref_key_descriptor "(optional)"
     }
-    example_bytes {
-        string example_bytes_label PK
+    ordered_sample_bytes {
+        string ordered_sample_bytes_label PK
         bytes bytes
     }
-    example_dict {
-        string example_dict_label PK
+    ordered_sample_bin_ref {
+        string ordered_sample_bin_ref_label PK
         bytes binary
         hex reference
     }
-    example_key {
+    ref_key_descriptor {
         hex reference PK
         hex key
         string description
     }
     gallery_descriptor ||--o{ GalleryItem : contains
-    GalleryItem ||--o{ example_bytes : contains
-    GalleryItem ||--o{ example_dict : contains
-    example_dict ||--|| example_key : contains
+    GalleryItem ||--o{ ordered_sample_bytes : contains
+    GalleryItem ||--o{ ordered_sample_bin_ref : contains
+    ordered_sample_bin_ref ||--|| ref_key_descriptor : contains
 ```
 
 Using the previously described *constr.py* example to test the advanced usage of the *gallery_descriptor* format, paste the following code, then save:
@@ -439,7 +439,7 @@ Int16sl_Dec = ExprAdapter(
 )
 
 gallery_descriptor = {
-    "example_bytes using dictionaries": GalleryItem(
+    "ordered_sample_bytes using dictionaries": GalleryItem(
         construct=Struct(
             "temperature" / Int16sl_Dec,
             "counter" / Int8ul,
@@ -447,7 +447,7 @@ gallery_descriptor = {
             'decimals' / Computed(this._params.decimals),
         ),
         clear_log=True,
-        example_bytes={
+        ordered_sample_bytes={
             'Numbers 20.5 and 12': bytes.fromhex("14 50 0c"),
             'Numbers 21.4 and 13': bytes.fromhex("98 53 0d"),
         },
@@ -456,7 +456,7 @@ gallery_descriptor = {
             'decimals': 1000,
         }
     ),
-    "example_bytes using ordered dictionaries": GalleryItem(
+    "ordered_sample_bytes using ordered dictionaries": GalleryItem(
         construct=GreedyRange(
             Struct(
                 "temperature" / Int16sl_Dec,
@@ -464,7 +464,7 @@ gallery_descriptor = {
             )
         ),
         clear_log=True,
-        example_bytes=OrderedDict(  # OrderedDict format
+        ordered_sample_bytes=OrderedDict(  # OrderedDict format
             [
                 ('Ten numbers', bytes.fromhex(
                     "cd 00 0c d8 00 0d e3 00 0e ee 00 0f f9 00 10")),
@@ -477,7 +477,7 @@ gallery_descriptor = {
             'decimals': 10,
         }
     ),
-    "example_dict": GalleryItem(
+    "ordered_sample_bin_ref": GalleryItem(
         construct=GreedyRange(
             Struct(
                 "temperature" / Int16sl_Dec,
@@ -488,7 +488,7 @@ gallery_descriptor = {
             )
         ),
         clear_log=True,
-        example_dict=OrderedDict(
+        ordered_sample_bin_ref=OrderedDict(
             [
                 (
                     "Ten numbers",
@@ -513,7 +513,7 @@ gallery_descriptor = {
                 ),
             ]
         ),
-        example_key={
+        ref_key_descriptor={
             "AA:BB:CC:DD:EE:FF": {
                 "key": "aaaaaaaa",
                 "decimals": "100",
@@ -572,10 +572,10 @@ options:
 construct_gallery utility
 ```
 
-Parameters `-b`, `-m` and `-M` are available when *bleak* is installed.
+Parameters `-b` with related `-m` and `-M` are available when *bleak* is installed.
 
 Error exit codes:
-3: invalid command line parameter
+2: invalid command line parameter
 
 ## Modules and widgets
 
@@ -682,8 +682,6 @@ python3 -m pip uninstall -y construct-gallery
 
 ### ConstructGallery
 
-Test it with `python3 -m construct_gallery -c`.
-
 ```python
 import wx
 from construct_gallery import ConstructGallery
@@ -692,69 +690,47 @@ frame = wx.Frame()
 ...
 
 cg = ConstructGallery(
-    frame,                       # parent frame
-    load_menu_label="Gallery Data",  # label of the clear samples button
-    clear_label="Gallery",           # label of the clear gallery button
+    frame,                           # Parent frame
+    load_menu_label="Gallery Data",  # Label of the clear samples button
+    clear_label="Gallery",           # Label of the clear gallery button
 
-    reference_label=None,    # needed reference label when using example_dict in GalleryItem
-    key_label=None,          # key label when using example_dict
-    description_label=None,  # description label when using example_dict
+    reference_label=None,    # Needed reference label when using ordered_sample_bin_ref in GalleryItem
+    key_label=None,          # Key label when using ordered_sample_bin_ref
+    description_label=None,  # Description label when using ordered_sample_bin_ref
 
-    added_data_label="",          # label of an optional trailer to each added record
-    loadfile=None,                # pickle file to be loaded at startup
+    added_data_label="",          # Label of an optional trailer to each added record
+    load_pickle_file=None,        # Pickle file to be loaded at startup
 
-    gallery_descriptor=None,  #  gallery_descriptor variable
-    ordered_samples=None,  # example_dict variable, when non included in gallery_descriptor
-    ref_key_descriptor=None,  # example_key variable, when non included in gallery_descriptor
+    gallery_descriptor=None,      # gallery_descriptor parameter (see below)
+    ordered_sample_bin_ref=None,  # ordered_sample_bin_ref variable, when non included in gallery_descriptor
+    ref_key_descriptor=None,      # ref_key_descriptor variable, when non included in gallery_descriptor
 
-    default_gallery_selection=0,  # number of the selected element in the construct gallery
+    default_gallery_selection=0,  # Number of the selected element in the construct gallery
 
-    gallery_descriptor_var=None,  # name of the searched gallery_descriptor variable in the imported program (default is "gallery_descriptor")
-    construct_format_var=None,  # name of the searched construct_format variable in the imported program (default is "construct_format")
+    gallery_descriptor_var=None,  # Name of the searched gallery_descriptor variable in the imported program (default is "gallery_descriptor")
+    construct_format_var=None,    # Name of the searched construct_format variable in the imported program (default is "construct_format")
 
-    col_name_width=None,          # width of the first column ("name")
-    col_type_width=None,          # width of the second column ("type")
-    col_value_width=None,         # width of the third column ("value"),
+    col_name_width=None,          # Width of the first column ("name")
+    col_type_width=None,          # Width of the second column ("type")
+    col_value_width=None,         # Width of the third column ("value"),
 
-    run_shell_plugin=True,        # activate the shell plugin by default
-    run_hex_editor_plugins=True   # activate the hex editor plugins by default
+    run_shell_plugin=True,        # Activate the shell plugin by default
+    run_hex_editor_plugins=True   # Activate the hex editor plugins by default
 )
 ...
 ```
 
-- a dynamically reloadable module, including the *gallery_descriptor* dictionary (module name without ".py").
+The *gallery_descriptor* parameter can be:
 
-If a module is used, the button "Reload construct module" appears, to enable the dynamic reloading of the module.
+- a module (including *construct_format* or *gallery_descriptor*), which is imported at runtime; the button "Reload construct module" appears in this case, to enable the dynamic reloading of the module;
+- a variable (either a simple *construct* form or a *gallery_descriptor* form).
 
-A table (activated through a button) allows editing MAC addresses and their related Bindkey and description.
+Other than adding *ordered_sample_bin_ref* and *ref_key_descriptor* to each *GalleryItem* of *gallery_descriptor*, they can be separately and globally set with the *ordered_sample_bin_ref* and *ref_key_descriptor parameters* of ConstructGallery():
 
-Example of `example_key`:
+- `ordered_sample_bin_ref` is an ordered dictionary (`OrderedDict`) of samples that are valid for all construct gallery elements, so independent of specific elements in the *gallery_descriptor*. Notice that, if a reference is used, *reference_label*, *key_label* and *description_label* must be set in *ConstructGallery*.
+- `ref_key_descriptor` is a dictionary of key and descriptor for each reference. This is valid for all construct gallery elements.
 
-```python
-example_key={
-    "A4:C1:38:AA:BB:EE": {
-        "bindkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        "description": "test A",
-    },
-    "A4:C1:38:AA:BB:CC": {
-        "bindkey": "cccccccccccccccccccccccccccccccc",
-        "description": "test B",
-    }
-}
-```
-
-In `example_key`, the actual name of "key" is determined by the `key_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Example, if `key_label="Bindkey"`, then the key will be `"bindkey"`. Same for the *description* label (ref. `description_label`). Example:
-
-
-Example of `ref_key_descriptor`:
-
-```python
-ref_key_descriptor = {
-    "A4:C1:38:AA:BB:CC": {"bindkey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
-    "A4:C1:38:AA:BB:DD": {"bindkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-    "A4:C1:38:AA:BB:EE": {"bindkey": "cccccccccccccccccccccccccccccccc"}
-}
-```
+Another possibility to load the configuration (or to replace a default configuration) is through a Pickle file created by the "Save to file" button of *construct_gallery*; use *load_pickle_file* for this.
 
 Complete program:
 
@@ -776,7 +752,7 @@ gallery_descriptor = {
             "Int8sl" / cs.Int8sl
         ),
         clear_log=True,
-        example_bytes=OrderedDict(  # OrderedDict format
+        ordered_sample_bytes=OrderedDict(  # OrderedDict format
             [
                 ('A number', bytes.fromhex("01 02 03")),
                 ('All 1', bytes.fromhex("01 00 01")),
@@ -790,7 +766,7 @@ gallery_descriptor = {
             "Int8ub" / cs.Int8ub
         ),
         clear_log=True,
-        example_bytes={  # dictionary format
+        ordered_sample_bytes={  # dictionary format
             "A number": bytes.fromhex("04 d2 7b"),
             "All 1": bytes.fromhex("00 01 01"),
             "All 0": bytes(2 + 1),
@@ -835,9 +811,9 @@ classDiagram
         key_label=None
         description_label=None
         added_data_label=""
-        loadfile=None
+        load_pickle_file=None
         gallery_descriptor=None
-        ordered_samples=None
+        ordered_sample_bin_ref=None
         ref_key_descriptor=None
         default_gallery_selection=0
         col_name_width=None
@@ -1198,15 +1174,12 @@ Preview of a sample usage of *ConfigEditorPanel*:
 
 ![Preview of a sample usage of ConfigEditorPanel](https://github.com/pvvx/ATC_MiThermometer/raw/master/python-interface/images/atc_mi_config.gif)
 
-
-
-
-
-
-
-
-
-
-
-- `ordered_samples`: `OrderedDict` of samples valid for all construct gallery elements, so independent of specific elements in the *gallery_descriptor*. Notice that, if a reference is used, *reference_label*, *key_label* and *description_label* must be set in *ConstructGallery*.
-- `ref_key_descriptor`: dictionary of key and descriptor for each reference. This is valid for all construct gallery elements.
+[//]: # (
+To do:
+- Cliccando example_dict e poi ten numbers, chiede di ricaricare
+- Quando si carica ordered_sample_bin_ref, non clicca sul primo
+- Rileggere il readme della parte API
+- Aggiungere il readme dell'opzione -b
+- C'è una nota: Test it with `python3 -m construct_gallery -c`.
+- update mermaid
+)

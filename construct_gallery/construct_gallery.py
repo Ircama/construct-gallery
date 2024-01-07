@@ -48,11 +48,11 @@ class GalleryItem:
     clear_log: bool = False
     contextkw: t.Dict[str, t.Any] = dataclasses.field(
         default_factory=dict)
-    example_bytes: t.OrderedDict[str, bytes] = dataclasses.field(
+    ordered_sample_bytes: t.OrderedDict[str, bytes] = dataclasses.field(
         default_factory=dict)
-    example_dict: t.OrderedDict[str, dict] = dataclasses.field(
+    ordered_sample_bin_ref: t.OrderedDict[str, dict] = dataclasses.field(
         default_factory=dict)
-    example_key: t.Dict[str, dict] = dataclasses.field(
+    ref_key_descriptor: t.Dict[str, dict] = dataclasses.field(
         default_factory=dict)
 
 
@@ -731,16 +731,16 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
 
     def __init__(
             self,
-            parent,
+            parent,                                 # parent frame
             load_menu_label="Gallery Data",
             clear_label="Gallery",
             reference_label=None,
             key_label=None,
             description_label=None,
             added_data_label="",
-            loadfile=None,
+            load_pickle_file=None,
             gallery_descriptor=None,
-            ordered_samples=None,
+            ordered_sample_bin_ref=None,
             ref_key_descriptor=None,
             default_gallery_selection=0,
             gallery_descriptor_var=None,
@@ -763,7 +763,7 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         self.key_label = key_label
         self.description_label = description_label
         self.added_data_label = added_data_label
-        self.loadfile = loadfile
+        self.load_pickle_file = load_pickle_file
         self.default_gallery_selection = default_gallery_selection
         self.gallery_descriptor_var = (
                 gallery_descriptor_var or self.GALLERY_DESCRIPTOR
@@ -929,9 +929,9 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
 
         if ref_key_descriptor:
             GalleryDict.update_key_descr_dict(ref_key_descriptor)
-        if ordered_samples:
-            GalleryDict.update_dict(ordered_samples)
-            for sample in ordered_samples.keys():
+        if ordered_sample_bin_ref:
+            GalleryDict.update_dict(ordered_sample_bin_ref)
+            for sample in ordered_sample_bin_ref.keys():
                 if sample not in self.gallery_selector_lbx.GetItems():
                     self.gallery_selector_lbx.Append(sample)
 
@@ -1022,8 +1022,8 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
 
         self.change_gallery_selection()
 
-        if self.loadfile:
-            for i in self.loadfile:
+        if self.load_pickle_file:
+            for i in self.load_pickle_file:
                 try:
                     gallery_history = GalleryDict.load_dict(i)
                 except IOError:
@@ -1174,7 +1174,16 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
                     return False
             self.gallery_descriptor.gallery_descriptor = gallery_descr
         else:
-            gallery_descr = self.gallery_descriptor
+            if issubclass(type(self.gallery_descriptor), cs.Construct):
+                gallery_descr = {
+                    self.construct_format_var: GalleryItem(
+                        construct=self.gallery_descriptor
+                    ),
+                    **self.default_gallery_descr
+                }
+                self.gallery_descriptor = gallery_descr
+            else:
+                gallery_descr = self.gallery_descriptor
         self.construct_selector_lbx.Clear()
         self.construct_selector_lbx.InsertItems(
             list(gallery_descr.keys()), 0)
@@ -1748,23 +1757,23 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         if gallery_item.clear_log:
             self.previous_selection = None
             self.clear_log()
-        if len(gallery_item.example_bytes) > 0:
-            for i in gallery_item.example_bytes:
+        if len(gallery_item.ordered_sample_bytes) > 0:
+            for i in gallery_item.ordered_sample_bytes:
                 self.add_data(
-                    data=gallery_item.example_bytes[i],
+                    data=gallery_item.ordered_sample_bytes[i],
                     label=i,
                     discard_duplicates=True)
             self.gallery_selector_lbx.SetStringSelection(
-                list(gallery_item.example_bytes.keys())[0]
+                list(gallery_item.ordered_sample_bytes.keys())[0]
             )
             self.previous_selection = self.gallery_selector_lbx.GetStringSelection()
-        if len(gallery_item.example_dict) > 0:
-            GalleryDict.update_dict(gallery_item.example_dict)
+        if len(gallery_item.ordered_sample_bin_ref) > 0:
+            GalleryDict.update_dict(gallery_item.ordered_sample_bin_ref)
             for i in GalleryDict.keys():
                 if i not in self.gallery_selector_lbx.GetItems():
                     self.gallery_selector_lbx.Append(i)
-        if gallery_item.example_key:
-            GalleryDict.update_key_descr_dict(gallery_item.example_key)
+        if gallery_item.ref_key_descriptor:
+            GalleryDict.update_key_descr_dict(gallery_item.ref_key_descriptor)
         if self.gallery_selector_lbx.GetStringSelection():
             sample_binary = GalleryDict.get_binary(
                 self.gallery_selector_lbx.GetStringSelection())
