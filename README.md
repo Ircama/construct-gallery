@@ -76,7 +76,7 @@ construct_format = GreedyRange(
 )
 ```
 
-Note: when using [tunnels](https://construct.readthedocs.io/en/latest/api/adapters.html#construct.ExprAdapter), you also need to [declare the adapter](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/core/custom.py#L53) for correct rendering in *construct_editor*.
+Note: when using [tunnels](https://construct.readthedocs.io/en/latest/api/adapters.html#construct.ExprAdapter), you also need to [declare the adapter](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/core/custom.py#L53) for correct rendering in *construct-editor*.
 
 Press "Reload construct module" in *construct-gallery*: you will see the updated structure.
 
@@ -112,7 +112,7 @@ Notice that *construct_format* and *gallery_descriptor* are default names of var
 
 When using the *construct_format* mode, in order to provide basic structures for testing, *construct-gallery* automatically creates *Bytes*, *Characters* and *UTF-8 String* galleries (if you run the previous example, you can see them).
 
-The *gallery_descriptor* mode allows you to define custom galleries. To classify the custom gallery elements, *gallery_descriptor* adopts an enriched `GalleryItem()` data model [initially defined in *construct_editor*](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/gallery/__init__.py#L7-L10), which can be imported with `from construct_gallery import GalleryItem`.
+The *gallery_descriptor* mode allows you to define custom galleries. To classify the custom gallery elements, *gallery_descriptor* adopts an enriched `GalleryItem()` data model [initially defined in *construct-editor*](https://github.com/timrid/construct-editor/blob/b4c63dcea1a057cbcc7106b2d58c8bb4d8503e3b/construct_editor/gallery/__init__.py#L7-L10), which can be imported with `from construct_gallery import GalleryItem`.
 
 The *gallery_descriptor* mode can be:
 
@@ -157,7 +157,7 @@ The *gallery_descriptor* mode can be:
   )
   ```
 
-*GalleryItem* data model used by *construct_gallery*:
+As mentioned, *construct_gallery* enhances the *GalleryItem* data model, introducing additional attributes:
 
 ```python
 import dataclasses
@@ -199,31 +199,6 @@ GalleryItem(
         "All 0": bytes(2 + 1),
     },
 )
-```
-
-Example of ordered dictionary:
-
-```python
-from collections import OrderedDict
-
-ordered_sample_bin_ref=OrderedDict(
-    [
-        (
-            "item 1",
-            {
-                "binary": bytes.fromhex("12 16"),
-                "mac_address": "A4:C1:38:AA:BB:EE",
-            },
-        ),
-        (
-            "item 2",
-            {
-                "binary": bytes.fromhex("0e 16"),
-                "mac_address": "A4:C1:38:AA:BB:EE",
-            },
-        ),
-    ]
-),
 ```
 
 Using the previously described *constr.py* example to test the *gallery_descriptor* format, paste the following code, then save:
@@ -272,11 +247,34 @@ gallery_descriptor = {
 
 ### Using keyword arguments
 
-As `construct` accepts keyword arguments passed through the [`_params`](https://construct.readthedocs.io/en/latest/basics.html#hidden-context-entries) entry, also *construct-editor* and *construct-gallery* support them.
+As `construct` accepts keyword arguments passed through the [`_params`](https://construct.readthedocs.io/en/latest/basics.html#hidden-context-entries) entry in order to provide metadata or additional information to the structure, also *construct-editor* and *construct-gallery* support them.
 
-*construct-gallery* can use the same `contextkw` global form defined by *construct-editor*, or up to three variables (reference, key and description).
+```python
+# How construct uses keyword arguments:
+from construct import *
 
-`contextkw` is a dictionary of *key: value* pairs of items to be passed to `construct` as arguments.
+constr = Struct(
+    "my_counter" / Int8ul,
+    'my_string' / Computed(this._params.my_string),
+    'my_digit' / Computed(this._params.my_digit),
+)
+
+print(constr.parse(b'\x01', my_string="Hello", my_digit=2))
+```
+*construct-gallery* can use the same `contextkw` global form defined by *construct-editor*, or up to three variables (reference, key and description) inside each *GalleryItem*.
+
+`contextkw` is a dictionary of "*key: value*" pairs of items to be passed to `construct` as arguments.
+
+In the previous sample, the following produces the same result:
+
+```python
+contextkw = {
+    'my_string': "Hello",
+    'my_digit': 2,
+}
+
+print(constr.parse(b'\x01', **contextkw))  # dictionary unpack to keyword arguments
+```
 
 In the following example, *my_string* is directly used inside the *construct* format, while *decimals* is passed to *ExprAdapter*; both access these variables via the *_params* entry:
 
@@ -312,9 +310,9 @@ gallery_descriptor = {
 }
 ```
 
-In the previous form which uses the *ordered_sample_bytes* attribute, the keywords defined in *contextkw* are globally available for all samples.
+In the previous form, which uses the *ordered_sample_bytes* attribute, the keywords defined in *contextkw* are globally available for all samples of the *GalleryItem*.
 
-In addition, *construct_gallery* allows using the *ordered_sample_bin_ref* attribute, which associates a reference ("reference", with customizable key label) to each byte sequence("binary", fixed key):
+In addition, *construct_gallery* allows using the *ordered_sample_bin_ref* attribute, which associates a reference (see "reference" in the following example, with customizable key label) to each byte sequence("binary", fixed key):
 
 ```python
 from collections import OrderedDict
@@ -356,7 +354,7 @@ ref_key_descriptor={
 
 All these three values (reference, key, description) are available through the *_params* entry and their labels must be preliminarily set using `-R`, `-K` and `-D` options, or using the *reference_label*, *key_label* and *description_label* parameters of the *ConstructGallery()* API. All are strings. *reference* and *key* shall be only valued with hex values. *description* allows free format.
 
-Specifically, `-R` (*reference_label*) is always mandatory. `-K` and `-D`(*key_label* and *description_label*) are required when key and description values are also needed. As an example, the first is mapped to the MAC address, the second to an encryption hex string and the third to an optional description text.
+Specifically, `-R` (*reference_label*) is always mandatory. `-K` and `-D`(*key_label* and *description_label*) are required when key and description values are also needed. As an example, the first might be mapped to the MAC address, the second to an encryption hex string and the third to an optional description text.
 
 The following is a typical structure of the *gallery_descriptor* variable when using *ordered_sample_bin_ref* and *ref_key_descriptor* in *GalleryItem()*:
 
@@ -393,7 +391,7 @@ The following diagram describes the relationship among the various attributes:
 erDiagram
     gallery_descriptor {
         %% "construct" selector, upper list box
-        string gallery_item_label PK
+        string gallery_item_label PK "label"
         class GalleryItem
     }
     "GalleryItem" {
@@ -404,23 +402,23 @@ erDiagram
         dict ref_key_descriptor "(optional)"
     }
     ordered_sample_bytes {
-        string ordered_sample_bytes_label PK
+        string ordered_sample_bytes_label PK "label"
         bytes bytes
     }
     ordered_sample_bin_ref {
-        string ordered_sample_bin_ref_label PK
-        bytes binary
-        hex reference
+        string ordered_sample_bin_ref_label PK "label"
+        bytes binary "fixed, cannot be renamed"
+        hex reference "can be renamed"
     }
     ref_key_descriptor {
-        hex reference PK
-        hex key
-        string description
+        hex reference PK "(optional, can be renamed)"
+        hex key "(optional, can be renamed)"
+        string description "(optional, can be renamed)"
     }
     gallery_descriptor ||--o{ GalleryItem : contains
     GalleryItem ||--o{ ordered_sample_bytes : contains
     GalleryItem ||--o{ ordered_sample_bin_ref : contains
-    ordered_sample_bin_ref ||--|| ref_key_descriptor : contains
+    ordered_sample_bin_ref ||--|| ref_key_descriptor : "reference is associated to"
 ```
 
 Using the previously described *constr.py* example to test the advanced usage of the *gallery_descriptor* format, paste the following code, then save:
@@ -572,9 +570,10 @@ options:
 construct_gallery utility
 ```
 
-Parameters `-b` with related `-m` and `-M` are available when *bleak* is installed.
+Parameters `-b` with related `-m` and `-M` are only available when *bleak* is installed.
 
 Error exit codes:
+
 2: invalid command line parameter
 
 ## Modules and widgets
@@ -633,7 +632,7 @@ python3 -m pip install bleak
 
 With Raspberry Pi, *bleak* will install *dbus-fast*, which needs to build the python *wheel* (related compilation takes some time).
 
-Prerequisite component: [construct_editor](https://github.com/timrid/construct-editor). *construct-editor* is automatically installed with the package, while *bleak* requires manual installation.
+Prerequisite component: [construct-editor](https://github.com/timrid/construct-editor). *construct-editor* is automatically installed with the package, while *bleak* requires manual installation.
 
 Additional prerequisites for Raspberry Pi:
 
@@ -1175,12 +1174,12 @@ Preview of a sample usage of *ConfigEditorPanel*:
 ![Preview of a sample usage of ConfigEditorPanel](https://github.com/pvvx/ATC_MiThermometer/raw/master/python-interface/images/atc_mi_config.gif)
 
 <!---
-To do:
-- Cliccando example_dict e poi ten numbers, chiede di ricaricare
-- Quando si carica ordered_sample_bin_ref, non clicca sul primo
+INTERNAL NOTES HERE
 - Rileggere il readme della parte API
 - Aggiungere il readme dell'opzione -b
 - C'è una nota: Test it with `python3 -m construct_gallery -c`.
 - update mermaid
+- scrivere che per editare basta inserire i numeri
+- controllare quale parte del readme estrae il setup
 "
 -->

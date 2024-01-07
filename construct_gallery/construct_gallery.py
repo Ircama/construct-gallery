@@ -1757,21 +1757,25 @@ class ConstructGallery(wx.Panel, PyShellPlugin):
         if gallery_item.clear_log:
             self.previous_selection = None
             self.clear_log()
-        if len(gallery_item.ordered_sample_bytes) > 0:
-            for i in gallery_item.ordered_sample_bytes:
+        if len(gallery_item.ordered_sample_bytes) > 0:  # sample_bytes
+            for i in gallery_item.ordered_sample_bytes:  # load samples
                 self.add_data(
                     data=gallery_item.ordered_sample_bytes[i],
                     label=i,
                     discard_duplicates=True)
-            self.gallery_selector_lbx.SetStringSelection(
+            self.gallery_selector_lbx.SetStringSelection(  # select the first sample
                 list(gallery_item.ordered_sample_bytes.keys())[0]
             )
             self.previous_selection = self.gallery_selector_lbx.GetStringSelection()
-        if len(gallery_item.ordered_sample_bin_ref) > 0:
+        if len(gallery_item.ordered_sample_bin_ref) > 0:  # sample_bin_ref
             GalleryDict.update_dict(gallery_item.ordered_sample_bin_ref)
-            for i in GalleryDict.keys():
+            for i in GalleryDict.keys():  # load samples
                 if i not in self.gallery_selector_lbx.GetItems():
                     self.gallery_selector_lbx.Append(i)
+            self.gallery_selector_lbx.SetStringSelection(  # select the first sample
+                list(gallery_item.ordered_sample_bin_ref.keys())[0]
+            )
+            self.previous_selection = self.gallery_selector_lbx.GetStringSelection()
         if gallery_item.ref_key_descriptor:
             GalleryDict.update_key_descr_dict(gallery_item.ref_key_descriptor)
         if self.gallery_selector_lbx.GetStringSelection():
