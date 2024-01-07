@@ -116,7 +116,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'construct_editor>=0.1.5'
+        'construct_editor>=0.1.5',
         'setuptools>=68.2.0',
         'wxPython>=4.2.1',
         'construct>=2.10.70',

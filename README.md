@@ -269,6 +269,17 @@ gallery_descriptor = {
 }
 ```
 
+## Using keyword arguments
+
+As `construct` accepts keyword arguments passed through the [`_params`](https://construct.readthedocs.io/en/latest/basics.html#hidden-context-entries) entry, also *construct-editor* and *construct-gallery* support them.
+
+*construct-gallery* can use the `contextkw` global form defined *construct-editor*, or 
+up to three variables.
+
+by  Keyword arguments can be passed to construct 
+ is a dictionary of *key: value* pairs of items to be passed to `construct` as arguments.
+
+
 Other than *example_bytes*, *gallery_descriptor* supports *contextkw*, *example_dict* and *example_key*).
 
 `example_dict` is an ordered dictionary of ordered dictionaries; the form is a collection of `"label": dict_item` key-value elements, where *dict_item* is in turn a collection of `"binary": bytes, "reference": string` elements; the label *reference* can be customized through the *reference_label* parameter; for instance `reference_label="MAC address"`.
@@ -285,7 +296,7 @@ The following diagram describes the relationship among the various attributes:
 erDiagram
     gallery_descriptor {
         %% "construct" selector, upper list box
-        string gallery_item_label PK "(upper table)"
+        string gallery_item_label PK
         class GalleryItem
     }
     "GalleryItem" {
@@ -361,6 +372,9 @@ gallery_descriptor = {
             Struct(
                 "temperature" / Int16ul_x100,
                 "counter" / Int8ul,
+                'key' / Computed(this._params.key),
+                'reference' / Computed(this._root._.reference),
+                'description' / Computed(this._params.description)
             )
         ),
         clear_log=True,
@@ -402,6 +416,14 @@ gallery_descriptor = {
     ),
 }
 ```
+
+Run it with the following command:
+
+```bash
+python3 -m construct_gallery -R reference -K key -D description constr.py
+```
+
+Verify all buttons.
 
 ## Command-line parameters
 
@@ -459,8 +481,6 @@ The following Python modules are included:
   
   This module can be directly used in GUI programs, or can be further extended with `bleak_scanner_construct.py`.
 
-- `edit_plugin.py`, enabling "Edit UTF-8 text" and "Edit bytes" options on the context-menu of the central hex editor panel.
-
 - `config_editor.py`, providing the `ConfigEditorPanel()` class (widget).
 
   This widget implements an editing GUI composed by a form including multiple byte structures, each one related to its own *construct* data model.
@@ -483,6 +503,7 @@ The following Python modules are included:
   - `string_convert_plugin.py`
 - `wx_logging_plugin.py`, providing a debug GUI panel in background.
 - `pyshell_plugin.py`, activating a Python shell button that allows opening a PyShell frame (PyShell is a GUI-based python shell), which also includes a special *Help* with related submenu (that can be invoked also via F9). 
+- `edit_plugin.py`, enabling "Edit UTF-8 text" and "Edit bytes" options on the context-menu of the central hex editor panel.
 
 ## Setup
 
