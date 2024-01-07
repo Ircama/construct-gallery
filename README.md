@@ -1174,7 +1174,7 @@ Preview of a sample usage of *ConfigEditorPanel*:
 
 ![Preview of a sample usage of ConfigEditorPanel](https://github.com/pvvx/ATC_MiThermometer/raw/master/python-interface/images/atc_mi_config.gif)
 
-[//]: # (
+[//]: # "
 To do:
 - Cliccando example_dict e poi ten numbers, chiede di ricaricare
 - Quando si carica ordered_sample_bin_ref, non clicca sul primo
@@ -1182,4 +1182,4 @@ To do:
 - Aggiungere il readme dell'opzione -b
 - C'è una nota: Test it with `python3 -m construct_gallery -c`.
 - update mermaid
-)
+"
