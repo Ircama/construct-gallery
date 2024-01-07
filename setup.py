@@ -119,7 +119,7 @@ setup(
         'construct_editor>=0.1.5',
         'setuptools>=68.2.0',
         'wxPython>=4.2.1',
-        'construct>=2.10.70',
+        'construct>=2.10.68',
     ],
     keywords=[
         "construct-gallery",
