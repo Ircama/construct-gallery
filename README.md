@@ -94,7 +94,7 @@ Select some bytes in the central panel, press the right key of the mouse: a cont
 
 Other than the previously described basic mode, *construct-gallery*  offers advanced configurations that allow you to predefine a gallery of samples with different formats and options. The data structure defined with *construct-gallery* can be used to provide optional attributes to the *construct* format.
 
-Specifically, *construct-gallery* is able to read two kinds of formats inside the Python program:
+*construct-gallery* is able to read two kinds of formats inside the Python program:
 
 - the basic one, consisting of a single gallery element (the one previously exemplified):
 
@@ -108,7 +108,7 @@ Specifically, *construct-gallery* is able to read two kinds of formats inside th
   gallery_descriptor = <dictionary or ordered dictionary of GalleryItem elements>
   ```
 
-Notice that *construct_format* and *gallery_descriptor* are default names of variables which can be changed through the `-f`/`-F` options, or via API.
+Notice that *construct_format* and *gallery_descriptor* are default names of variables which can be changed through the `-f`/`-F` options, or via API (ref. *gallery_descriptor_var* and *construct_format_var* parameters of `ConstructGallery()`).
 
 When using the *construct_format* mode, in order to provide basic structures for testing, *construct-gallery* automatically creates *Bytes*, *Characters* and *UTF-8 String* galleries (if you run the previous example, you can see them).
 
@@ -354,7 +354,9 @@ example_key={
 }
 ```
 
-All these three values (reference, key, description) are available through the *_params* entry and their labels are configurable using `-R`, `-K` and `-D` options, or using the *reference_label*, *key_label* and *description_label* parameters of the *ConstructGallery()* API. All are strings. *reference* and *key* need to include hex values. *description* allows free format. Typically, *reference* is mapped to a MAC address, while *key* is mapped to an encryption hex string.
+All these three values (reference, key, description) are available through the *_params* entry and their labels must be preliminarily set using `-R`, `-K` and `-D` options, or using the *reference_label*, *key_label* and *description_label* parameters of the *ConstructGallery()* API. All are strings. *reference* and *key* shall be only valued with hex values. *description* allows free format.
+
+Specifically, `-R` (*reference_label*) is always mandatory. `-K` and `-D`(*key_label* and *description_label*) are required when key and description values are also needed. As an example, the first is mapped to the MAC address, the second to an encryption hex string and the third to an optional description text.
 
 The following is a typical structure of the *gallery_descriptor* variable when using *example_dict* and *example_key* in *GalleryItem()*:
 
@@ -382,6 +384,8 @@ gallery_descriptor = {
 `example_key` is a dictionary of *"reference": { key, description }*.
 
 *..._label* parameters substitute spaces with underscores and uppercase letters with lowercase. Example, if `reference_label="MAC address"`, then the reference will be `"mac_address"`.
+
+When using the API, the *gallery_descriptor* parameter is used to load the related structure; in addition, *ordered_samples* and *ref_key_descriptor* are available to separately load *example_dict* and *example_key* data, if *gallery_descriptor* does not include them.
 
 The following diagram describes the relationship among the various attributes:
 
@@ -681,27 +685,37 @@ python3 -m pip uninstall -y construct-gallery
 Test it with `python3 -m construct_gallery -c`.
 
 ```python
+import wx
 from construct_gallery import ConstructGallery
 
+frame = wx.Frame()
 ...
+
 cg = ConstructGallery(
-    parent,
+    frame,                       # parent frame
     load_menu_label="Gallery Data",  # label of the clear samples button
     clear_label="Gallery",           # label of the clear gallery button
-    reference_label=None,
-    key_label=None,
-    description_label=None,
+
+    reference_label=None,    # needed reference label when using example_dict in GalleryItem
+    key_label=None,          # key label when using example_dict
+    description_label=None,  # description label when using example_dict
+
     added_data_label="",          # label of an optional trailer to each added record
     loadfile=None,                # pickle file to be loaded at startup
-    gallery_descriptor=None,
-    ordered_samples=None,
-    ref_key_descriptor=None,
+
+    gallery_descriptor=None,  #  gallery_descriptor variable
+    ordered_samples=None,  # example_dict variable, when non included in gallery_descriptor
+    ref_key_descriptor=None,  # example_key variable, when non included in gallery_descriptor
+
     default_gallery_selection=0,  # number of the selected element in the construct gallery
-    gallery_descriptor_var=None,
-    construct_format_var=None,
+
+    gallery_descriptor_var=None,  # name of the searched gallery_descriptor variable in the imported program (default is "gallery_descriptor")
+    construct_format_var=None,  # name of the searched construct_format variable in the imported program (default is "construct_format")
+
     col_name_width=None,          # width of the first column ("name")
     col_type_width=None,          # width of the second column ("type")
     col_value_width=None,         # width of the third column ("value"),
+
     run_shell_plugin=True,        # activate the shell plugin by default
     run_hex_editor_plugins=True   # activate the hex editor plugins by default
 )
