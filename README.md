@@ -27,7 +27,8 @@ The *construct* format shall be developed in a Python program through any IDE or
   - The left menu panel allows renaming labels and changing attribute labels. Also, by double-clicking an unused area of the left panel, new frames can be added and then labelled; subsequently, specific attributes can be associated. Samples can be repositioned, or deleted.
   - The hex editor (central panel) allows any kind of editing and copy/paste. Sequences of bytes can be pasted [in a number of different formats](https://github.com/timrid/construct-editor/pull/17#issuecomment-1367582581). Also, a special checkbox enables pasting Python expressions. Debugging tools are also provided (invoked with the right click of the mouse after selecting a sequence of bytes), to insert or convert bytes into a wide set of numeric forms as well as strings; these debug panels can be used to quickly check the most appropriate conversion method for a sequence of bytes.
 
-When also *bleak* is installed, the GUI includes a BLE Advertsement monitoring tool. Advertisements are logged in their reception sequence, automatically labeled with related MAC address.
+When also *bleak* is installed, the GUI includes a BLE Advertisement monitoring tool. Advertisements are logged in their reception sequence, automatically labeled with related MAC address.
+
 - A filter button can be used to enter a specific MAC address to restrict logging, a portion of it or a sequence of addresses, as well as BLE local names.
 - When starting the BLE reception, a debug window is opened in background, with the possibility to control the debug level and clear the produced data.
 
@@ -269,26 +270,118 @@ gallery_descriptor = {
 }
 ```
 
-## Using keyword arguments
+### Using keyword arguments
 
 As `construct` accepts keyword arguments passed through the [`_params`](https://construct.readthedocs.io/en/latest/basics.html#hidden-context-entries) entry, also *construct-editor* and *construct-gallery* support them.
 
-*construct-gallery* can use the `contextkw` global form defined *construct-editor*, or 
-up to three variables.
-
-by  Keyword arguments can be passed to construct 
- is a dictionary of *key: value* pairs of items to be passed to `construct` as arguments.
-
-
-Other than *example_bytes*, *gallery_descriptor* supports *contextkw*, *example_dict* and *example_key*).
-
-`example_dict` is an ordered dictionary of ordered dictionaries; the form is a collection of `"label": dict_item` key-value elements, where *dict_item* is in turn a collection of `"binary": bytes, "reference": string` elements; the label *reference* can be customized through the *reference_label* parameter; for instance `reference_label="MAC address"`.
+*construct-gallery* can use the same `contextkw` global form defined *construct-editor*, or up to three variables.
 
 `contextkw` is a dictionary of *key: value* pairs of items to be passed to `construct` as arguments.
 
+In the following example, *my_string* is directly used inside the *construct* format, while *decimals* is passed to *ExprAdapter*; both access these variables via the *_params* entry:
+
+```python
+from construct import *
+import construct_editor.core.custom as custom
+from construct_gallery import GalleryItem
+
+custom.add_custom_adapter(ExprAdapter, "ExprAdapter", custom.AdapterObjEditorType.String)
+Int16sl_Dec = ExprAdapter(
+    Int16ul,
+    lambda obj, ctx: obj / int(ctx._params.decimals),
+    lambda obj, ctx: int(float(obj) * int(ctx._params.decimals))
+)
+
+gallery_descriptor = {
+    "Basic example": GalleryItem(
+        construct=Struct(
+            "temperature" / Int16sl_Dec,
+            "counter" / Int8ul,
+            'my_string' / Computed(this._params.my_string),
+        ),
+        clear_log=True,
+        example_bytes={
+            'Numbers 20.5 and 12': bytes.fromhex("14 50 0c"),
+            'Numbers 21.4 and 13': bytes.fromhex("98 53 0d"),
+        },
+        contextkw={
+            'my_string': "one",
+            'decimals': 1000,
+        }
+    )
+}
+```
+
+In the previous form which uses the *example_bytes* attribute, the keywords defined in *contextkw* are globally available for all samples.
+
+In addition, *construct_gallery* allows using the *example_dict* attribute, which associates a reference to each byte sequence:
+
+```python
+from collections import OrderedDict
+
+example_dict=OrderedDict(
+    [
+        (
+            "One",
+            {
+                "binary": b'\x00\x01',
+                "reference": "AA",
+            },
+        ),
+        (
+            "Two",
+            {
+                "binary": b'\x00\x02',
+                "reference": "BB",
+            },
+        ),
+    ]
+)
+```
+
+Each reference can be mapped to other two values through the `example_key` attribute:
+
+```python
+example_key={
+    "AA": {
+        "key": "aaaaaaaa",
+        "description": "first",
+    },
+    "BB": {
+        "key": "bbbbbbbb",
+        "description": "second",
+    }
+}
+```
+
+All these three values (reference, key, description) are available through the *_params* entry and their labels are configurable using `-R`, `-K` and `-D` options, or using the *reference_label*, *key_label* and *description_label* parameters of the *ConstructGallery()* API. All are strings. *reference* and *key* need to include hex values. *description* allows free format. Typically, *reference* is mapped to a MAC address, while *key* is mapped to an encryption hex string.
+
+The following is a typical structure of *gallery_descriptor* when using *example_dict* and *example_key* in *GalleryItem()*:
+
+```python
+from collections import OrderedDict
+from construct_gallery import GalleryItem
+
+gallery_descriptor = {
+    "item": GalleryItem(
+        construct=...,
+        clear_log=True,
+        example_dict=OrderedDict(
+            ...
+        ),
+        example_key={
+            ...
+        }
+    ),
+    ...: ...,
+}
+```
+
+`example_dict` is an ordered dictionary of ordered dictionaries; the form is a collection of `"label": dict_item` key-value elements, where *dict_item* is in turn a collection of `"binary": bytes, "reference": string` elements. The key "binary" in *example_dict* is fixed. The label *reference* can be customized through the *reference_label* parameter; for instance `reference_label="MAC address"`.
+
 `example_key` is a dictionary of *"reference": { key, description }*.
 
-The actual name of "reference" is determined by the `reference_label` parameter, by substituting spaces with underscores and uppercase letters with lowercase. Example, if `reference_label="MAC address"`, then the reference will be `"mac_address"`.
+*..._label* parameters substitute spaces with underscores and uppercase letters with lowercase. Example, if `reference_label="MAC address"`, then the reference will be `"mac_address"`.
 
 The following diagram describes the relationship among the various attributes:
 
@@ -334,25 +427,35 @@ from construct import *
 import construct_editor.core.custom as custom
 from construct_gallery import GalleryItem
 
-custom.add_custom_adapter(ExprAdapter, "Int16ul_x100", custom.AdapterObjEditorType.String)
-Int16ul_x100 = ExprAdapter(Int16ul, obj_ / 100, lambda obj, ctx: int(float(obj) * 100))
+custom.add_custom_adapter(ExprAdapter, "ExprAdapter", custom.AdapterObjEditorType.String)
+Int16sl_Dec = ExprAdapter(
+    Int16ul,
+    lambda obj, ctx: obj / int(ctx._params.decimals),
+    lambda obj, ctx: int(float(obj) * int(ctx._params.decimals))
+)
 
 gallery_descriptor = {
-    "Basic example": GalleryItem(
+    "example_bytes using dictionaries": GalleryItem(
         construct=Struct(
-            "temperature" / Int16sl,
-            "counter" / Int8ul
+            "temperature" / Int16sl_Dec,
+            "counter" / Int8ul,
+            'my_string' / Computed(this._params.my_string),
+            'decimals' / Computed(this._params.decimals),
         ),
         clear_log=True,
         example_bytes={
-            'Numbers 20 and 12': bytes.fromhex("14 00 0c"),
-            'Numbers 21 and 13': bytes.fromhex("15 00 0d"),
+            'Numbers 20.5 and 12': bytes.fromhex("14 50 0c"),
+            'Numbers 21.4 and 13': bytes.fromhex("98 53 0d"),
+        },
+        contextkw={
+            'my_string': "one",
+            'decimals': 1000,
         }
     ),
-    "More complex example": GalleryItem(
+    "example_bytes using ordered dictionaries": GalleryItem(
         construct=GreedyRange(
             Struct(
-                "temperature" / Int16ul_x100,
+                "temperature" / Int16sl_Dec,
                 "counter" / Int8ul,
             )
         ),
@@ -360,21 +463,24 @@ gallery_descriptor = {
         example_bytes=OrderedDict(  # OrderedDict format
             [
                 ('Ten numbers', bytes.fromhex(
-                    "02 08 0c 70 08 0d de 08 0e 4c 09 0f ba 09 10")),
+                    "cd 00 0c d8 00 0d e3 00 0e ee 00 0f f9 00 10")),
                 ('All 1', bytes.fromhex(
                     "64 00 01 64 00 01 64 00 01 64 00 01 64 00 01")),
                 ('All 0', bytes(8 + 4 + 2 + 1)),
             ]
-        )
+        ),
+        contextkw={
+            'decimals': 10,
+        }
     ),
-    "Most configurable case": GalleryItem(
+    "example_dict": GalleryItem(
         construct=GreedyRange(
             Struct(
-                "temperature" / Int16ul_x100,
+                "temperature" / Int16sl_Dec,
                 "counter" / Int8ul,
                 'key' / Computed(this._params.key),
                 'reference' / Computed(this._root._.reference),
-                'description' / Computed(this._params.description)
+                'decimals' / Computed(this._params.decimals)
             )
         ),
         clear_log=True,
@@ -383,7 +489,7 @@ gallery_descriptor = {
                 (
                     "Ten numbers",
                     {
-                        "binary": bytes.fromhex("28 0a 11 8c 0a 12 f0 0a 13 54 0b 14 b8 0b 15"),
+                        "binary": bytes.fromhex("34 0a 11 a3 0a 12 12 0b 13 81 0b 14 f0 0b 15"),
                         "reference": "AA:BB:CC:DD:EE:FF",
                     },
                 ),
@@ -397,7 +503,7 @@ gallery_descriptor = {
                 (
                     "All 3",
                     {
-                        "binary": bytes.fromhex("2c 01 03 2c 01 03 2c 01 03 2c 01 03 2c 01 03"),
+                        "binary": bytes.fromhex("1e 00 03 1e 00 03 1e 00 03 1e 00 03 1e 00 03"),
                         "reference": "00:11:22:33:44:55",
                     },
                 ),
@@ -406,11 +512,11 @@ gallery_descriptor = {
         example_key={
             "AA:BB:CC:DD:EE:FF": {
                 "key": "aaaaaaaa",
-                "description": "description A",
+                "decimals": "100",
             },
             "00:11:22:33:44:55": {
                 "key": "bbbbbbbb",
-                "description": "description B",
+                "decimals": "10",
             }
         }
     ),
@@ -420,7 +526,7 @@ gallery_descriptor = {
 Run it with the following command:
 
 ```bash
-python3 -m construct_gallery -R reference -K key -D description constr.py
+python3 -m construct_gallery -R reference -K key -D decimals constr.py
 ```
 
 Verify all buttons.
