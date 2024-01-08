@@ -695,8 +695,8 @@ cg = ConstructGallery(
     load_pickle_file=None,        # Pickle file to be loaded at startup
 
     gallery_descriptor=None,      # gallery_descriptor parameter (see below)
-    ordered_sample_bin_ref=None,  # ordered_sample_bin_ref variable, when non included in gallery_descriptor
-    ref_key_descriptor=None,      # ref_key_descriptor variable, when non included in gallery_descriptor
+    ordered_sample_bin_ref=None,  # ordered_sample_bin_ref variable, when non-included in gallery_descriptor
+    ref_key_descriptor=None,      # ref_key_descriptor variable, when non-included in gallery_descriptor
 
     default_gallery_selection=0,  # Number of the selected element in the construct gallery
 

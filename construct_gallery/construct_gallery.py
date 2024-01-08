@@ -61,7 +61,8 @@ class HexEditorGrid(  # add plugins to HexEditorGrid
     edit_plugin.HexEditorGrid,
     decimal_convert_plugin.HexEditorGrid,
     allow_python_expr_plugin.HexEditorGrid,
-    wx_hex_editor.HexEditorGrid):
+    wx_hex_editor.HexEditorGrid
+):
     def build_context_menu(self):
         menus = super().build_context_menu()
         menus.insert(-5, None)  # add a horizontal line before the two plugins
@@ -331,7 +332,8 @@ class RefKeyDescrFrame(wx.Frame):
             title,
             pos=wx.DefaultPosition,
             style=(wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
-                  ^ wx.RESIZE_BORDER):
+            ^ wx.RESIZE_BORDER
+    ):
         wx.Frame.__init__(self, parent, descr_id, title, pos, style=style)
         self.parent = parent
         self.grid = EditableGrid(self)
