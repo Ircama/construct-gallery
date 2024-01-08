@@ -14,7 +14,7 @@ from pkg_resources import parse_version
 
 ###########################################################################
 
-END_OF_INTRODUCTION = '## Setup'
+END_OF_INTRODUCTION = '## Example of basic usage'
 
 EPILOGUE = (
     "Full information, installation notes, API reference and usage details at "
@@ -89,7 +89,8 @@ setup(
     version=verstr,
     description=DESCRIPTION,
     long_description=long_description[
-        :long_description.find(END_OF_INTRODUCTION)] + EPILOGUE,
+        :long_description.find(END_OF_INTRODUCTION)
+    ] + EPILOGUE,
     long_description_content_type="text/markdown",
     classifiers=[
         "License :: Other/Proprietary License",

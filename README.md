@@ -11,18 +11,18 @@ __Development and testing tool for construct, including widgets extending the fu
 
 The *construct* format shall be developed in a Python program through any IDE or editor. While editing and after loading the program to *construct-gallery*, it can be checked and also dynamically reloaded if modified meanwhile.
 
-*construct-gallery* is based on [wxPython](https://www.wxpython.org/) and [construct-editor](https://github.com/timrid/construct-editor): specifically, it relies on the excellent editing widgets provided by the *construct-editor* module and offers a superset of features compared with its standard [GUI](https://github.com/timrid/construct-editor/blob/main/construct_editor/main.py).
+*construct-gallery* is based on [wxPython](https://www.wxpython.org/) and [construct-editor](https://github.com/timrid/construct-editor): specifically, it relies on the excellent editing widgets provided by the *construct-editor* module and offers a superset of features compared with its standard [GUI](https://github.com/timrid/construct-editor/blob/main/construct_editor/main.py). *construct* is a powerful, declarative, symmetrical parser and builder for binary data.
 
 ## Main functionalities
 
 - Ready-to-use, cross-platform GUI
 - API widgets
-- The tool allows to define a gallery of *construct* formats, optionally associated to samples, which can be dynamically added, edited or predefined.
+- The tool allows defining a gallery of *construct* formats, optionally associated to samples, which can be dynamically added, edited or predefined.
 - Hex bytes can be collected into a gallery of samples, then renamed and reordered.
 - Samples are listed in the left panel, shown as hex bytes in the central panel and then parsed to browsable *construct* structures in the right panel.
 - Data can be saved to files in [pickle format](https://docs.python.org/3/library/pickle.html). Archives can be subsequently reloaded and appended to the current samples. They can also be inspected with `python3 -mpickle archive-file-name.pickle`.
 - The Python error management is wrapped into a GUI panel.
-- A Python shell button allows to open an inspector shell, which also provides a special *Help* with related submenu (or by pressing F9).
+- A Python shell button allows opening an inspector shell, which also provides a special *Help* with related submenu (or by pressing F9).
 - All panels allow a context menu (invoked with the right click of the mouse) with a number of special functions.
   - The left menu panel allows renaming labels and changing attribute labels. Also, by double-clicking an unused area of the left panel, new frames can be added and then labelled; subsequently, specific attributes can be associated. Samples can be repositioned, or deleted.
   - The hex editor (central panel) allows any kind of editing and copy/paste. Sequences of bytes can be pasted [in a number of different formats](https://github.com/timrid/construct-editor/pull/17#issuecomment-1367582581). Also, a special checkbox enables pasting Python expressions. Debugging tools are also provided (invoked with the right click of the mouse after selecting a sequence of bytes), to insert or convert bytes into a wide set of numeric forms as well as strings; these debug panels can be used to quickly check the most appropriate conversion method for a sequence of bytes.
@@ -265,7 +265,7 @@ print(constr.parse(b'\x01', my_string="Hello", my_digit=2))
 
 `contextkw` is a dictionary of "*key: value*" pairs of items to be passed to `construct` as arguments.
 
-In the previous sample, the following produces the same result:
+In the previous sample, the following code produces the same result:
 
 ```python
 contextkw = {
@@ -273,7 +273,7 @@ contextkw = {
     'my_digit': 2,
 }
 
-print(constr.parse(b'\x01', **contextkw))  # dictionary unpack to keyword arguments
+print(constr.parse(b'\x01', **contextkw))  # unpack dictionary to keyword arguments
 ```
 
 In the following example, *my_string* is directly used inside the *construct* format, while *decimals* is passed to *ExprAdapter*; both access these variables via the *_params* entry:
@@ -312,7 +312,7 @@ gallery_descriptor = {
 
 In the previous form, which uses the *ordered_sample_bytes* attribute, the keywords defined in *contextkw* are globally available for all samples of the *GalleryItem*.
 
-In addition, *construct_gallery* allows using the *ordered_sample_bin_ref* attribute, which associates a reference (see "reference" in the following example, with customizable key label) to each byte sequence("binary", fixed key):
+In addition, *construct_gallery* allows using the *ordered_sample_bin_ref* attribute, which associates a reference (see "reference" in the following example, with customizable key label) to each byte sequence ("binary", fixed key):
 
 ```python
 from collections import OrderedDict
@@ -531,7 +531,7 @@ Run it with the following command:
 python3 -m construct_gallery -R reference -K key -D decimals constr.py
 ```
 
-Verify all buttons.
+Verify all buttons and context menus.
 
 ## Command-line parameters
 
@@ -572,7 +572,7 @@ construct_gallery utility
 
 Parameters `-b` with related `-m` and `-M` are only available when *bleak* is installed.
 
-Error exit codes:
+### Error exit codes
 
 2: invalid command line parameter
 
@@ -582,13 +582,7 @@ The following Python modules are included:
 
 - `construct_gallery.py`, providing the `ConstructGallery()` class.
 
-  This module implements a GUI editor to parse and build an editable and ordered list of binary data via a gallery of predefined [construct](https://construct.readthedocs.io/en/latest/) data structures.
-  
-  *construct* is a powerful, declarative, symmetrical parser and builder for binary data.
-  
-  `construct_gallery.py` is based on [wxPython](https://www.wxpython.org/) and [construct-editor](https://github.com/timrid/construct-editor): it relies on the excellent editing widgets provided by the *construct-editor* module and offers a superset of features compared with its standard [GUI](https://github.com/timrid/construct-editor/blob/main/construct_editor/main.py).
-  
-  This module can be directly used in GUI programs, or can be further extended with `bleak_scanner_construct.py`.
+  This module implements a GUI editor to parse and build an editable and ordered list of binary data via a gallery of predefined [construct](https://construct.readthedocs.io/en/latest/) data structures. It can be directly used in GUI programs, or can be further extended with `bleak_scanner_construct.py`.
 
 - `config_editor.py`, providing the `ConfigEditorPanel()` class (widget).
 
@@ -606,13 +600,13 @@ The following Python modules are included:
 
 *construct-gallery* also includes a number of *construct-editor* plugins, which are used by `ConstructGallery()` and `BleakScannerConstruct()`, but they can be separately reused on projects based on *construct-editor*.
 
-- plugins offering additional options for the context menu of the *construct-editor* HexEditorGrid (invoked with the right click of the mouse):
-  - `allow_python_expr_plugin.py`
-  - `decimal_convert_plugin.py`
-  - `string_convert_plugin.py`
+- plugins offering additional options to the context menu of the *construct-editor* HexEditorGrid (invoked with the right click of the mouse):
+  - `allow_python_expr_plugin.py`, providing a toggle named "Allow pasting Python expression" to the context menu, which enables pasting Python expressions from the clipboard
+  - `decimal_convert_plugin.py`, adding "Convert to decimal" to the context menu, decoding selected bytes to various possibilities of numeric formats
+  - `string_convert_plugin.py`, adding "Convert to UTF-8 string" to the context menu, decoding selected bytes to UTF-8 strings
+  - `edit_plugin.py`, enabling "Edit UTF-8 text" and "Edit bytes" options on the context-menu of the central hex editor panel.
 - `wx_logging_plugin.py`, providing a debug GUI panel in background.
-- `pyshell_plugin.py`, activating a Python shell button that allows opening a PyShell frame (PyShell is a GUI-based python shell), which also includes a special *Help* with related submenu (that can be invoked also via F9). 
-- `edit_plugin.py`, enabling "Edit UTF-8 text" and "Edit bytes" options on the context-menu of the central hex editor panel.
+- `pyshell_plugin.py`, activating a Python shell button that allows opening a PyShell frame (PyShell is a GUI-based python shell), which also includes a special *Help* with related submenu (that can be invoked also via F9).
 
 ## Setup
 
@@ -804,21 +798,23 @@ classDiagram
     class ConstructGallery{
         parent
 
-        load_menu_label="Gallery Data"
-        clear_label="Gallery"
-        reference_label=None
-        key_label=None
-        description_label=None
-        added_data_label=""
-        load_pickle_file=None
-        gallery_descriptor=None
-        ordered_sample_bin_ref=None
-        ref_key_descriptor=None
-        default_gallery_selection=0
-        col_name_width=None
-        col_type_width=None
-        col_value_width=None
-        run_shell_plugin=True
+        load_menu_label="Gallery Data",
+        clear_label="Gallery",
+        reference_label=None,
+        key_label=None,
+        description_label=None,
+        added_data_label="",
+        load_pickle_file=None,
+        gallery_descriptor=None,
+        ordered_sample_bin_ref=None,
+        ref_key_descriptor=None,
+        default_gallery_selection=0,
+        gallery_descriptor_var=None,
+        construct_format_var=None,
+        col_name_width=None,
+        col_type_width=None,
+        col_value_width=None,
+        run_shell_plugin=True,
         run_hex_editor_plugins=True
 
         add_data(data, reference, label, append_label, discard_duplicates, date_separator, duplicate_separator)
@@ -1021,6 +1017,7 @@ app.MainLoop()
   - `allow_python_expr_plugin.py`
   - `decimal_convert_plugin.py`
   - `string_convert_plugin.py`
+  - `edit_plugin.py`
 
 - PyShell plugin `pyshell_plugin.py`, adding a button to activate a PyShell frame (PyShell is a GUI-based python shell).
 
@@ -1038,16 +1035,18 @@ import construct_editor.wx_widgets.wx_hex_editor
 from construct_gallery import decimal_convert_plugin
 from construct_gallery import string_convert_plugin
 from construct_gallery import allow_python_expr_plugin
-
+from construct_gallery import edit_plugin
 
 class HexEditorGrid(  # add plugins to HexEditorGrid
-        string_convert_plugin.HexEditorGrid,
-        decimal_convert_plugin.HexEditorGrid,
-        allow_python_expr_plugin.HexEditorGrid,
-        construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid):
+    string_convert_plugin.HexEditorGrid,
+    decimal_convert_plugin.HexEditorGrid,
+    allow_python_expr_plugin.HexEditorGrid,
+    edit_plugin.HexEditorGrid,
+    construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid
+):
     def build_context_menu(self):
         menus = super().build_context_menu()
-        menus.insert(-3, None)  # add a horizontal line before the two plugins
+        menus.insert(-5, None)  # add a horizontal line before the two plugins
         return menus
 
 
@@ -1079,19 +1078,22 @@ import logging
 from construct_gallery import decimal_convert_plugin
 from construct_gallery import string_convert_plugin
 from construct_gallery import allow_python_expr_plugin
+from construct_gallery import edit_plugin
 
 from construct_gallery.pyshell_plugin import PyShellPlugin
 from construct_gallery.wx_logging_plugin import WxLogging
 
 
 class HexEditorGrid(  # add plugins to HexEditorGrid
-        string_convert_plugin.HexEditorGrid,
-        decimal_convert_plugin.HexEditorGrid,
-        allow_python_expr_plugin.HexEditorGrid,
-        construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid):
+    string_convert_plugin.HexEditorGrid,
+    decimal_convert_plugin.HexEditorGrid,
+    allow_python_expr_plugin.HexEditorGrid,
+    edit_plugin.HexEditorGrid,
+    construct_editor.wx_widgets.wx_hex_editor.HexEditorGrid
+):
     def build_context_menu(self):
         menus = super().build_context_menu()
-        menus.insert(-3, None)  # add a horizontal line before the two plugins
+        menus.insert(-5, None)  # add a horizontal line before the two plugins
         return menus
 
 
@@ -1175,11 +1177,5 @@ Preview of a sample usage of *ConfigEditorPanel*:
 
 <!---
 INTERNAL NOTES HERE
-- Rileggere il readme della parte API
-- Aggiungere il readme dell'opzione -b
-- C'è una nota: Test it with `python3 -m construct_gallery -c`.
-- update mermaid
-- scrivere che per editare basta inserire i numeri
-- controllare quale parte del readme estrae il setup
-"
+- add notes related to the -b option
 -->
