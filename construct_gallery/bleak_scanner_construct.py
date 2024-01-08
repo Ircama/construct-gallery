@@ -95,9 +95,10 @@ class BleakScannerConstruct(ConstructGallery):
             added_data_label="Logging data",
             logging_plugin=True,
             auto_ble_start=False,
-            bleak_scanner_kwargs=None,
-            **kwargs):
-        super().__init__(
+            bleak_scanner_kwargs=None,  # this allows to pass configuration options to the bleak scanner
+            **kwargs  # this allows to add all ConstructGallery arguments
+    ):
+        super().__init__(  # ConstructGallery initialization
             *args,
             reference_label=reference_label,
             load_menu_label=load_menu_label,
@@ -121,6 +122,7 @@ class BleakScannerConstruct(ConstructGallery):
         self.startButton.Bind(wx.EVT_BUTTON, lambda event: self.ble_start())
         control_sizer.Add(self.startButton, 1, wx.EXPAND | wx.RIGHT, 5)
 
+        # Filter button
         self.filterButton = wx.Button(self, wx.ID_ANY, label="Filter")
         self.filterButton.Bind(wx.EVT_BUTTON, self.on_filter)
         control_sizer.Add(self.filterButton, 1, wx.EXPAND | wx.CENTER, 5)
@@ -255,11 +257,11 @@ class BleakScannerConstruct(ConstructGallery):
                     and "BleakScannerBlueZDBus" in str(
                         bleak.get_platform_scanner_backend_type()
                     )
-                ):
-                    subprocess.run(
+                ):  # https://stackoverflow.com/questions/55336017/disable-filter-duplicates-setting-for-le-set-scan-enable-command
+                    subprocess.run(  # Disable the 'Filter duplicates' kernel setting when the bluez Advertising Monitor is enabled
                         "which hcitool"
-                        " && sudo -n hcitool cmd 0x08 0x000C 0x00 0x00"
-                        " && sudo -n hcitool cmd 0x08 0x000C 0x01 0x00",
+                        " && sudo -n hcitool cmd 0x08 0x000C 0x00 0x00"  # Scan disabled (needed)
+                        " && sudo -n hcitool cmd 0x08 0x000C 0x01 0x00",  # Scan enabled, disabling Filter duplicates
                         shell=True,
                         capture_output=True
                     )

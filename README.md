@@ -11,12 +11,14 @@ __Development and testing tool for construct, including widgets extending the fu
 
 The *construct* format shall be developed in a Python program through any IDE or editor. While editing and after loading the program to *construct-gallery*, it can be checked and also dynamically reloaded if modified meanwhile.
 
+When also [bleak](https://bleak.readthedocs.io/en/latest/) is installed, the GUI includes a [BLE](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy) Advertisement monitoring tool. Advertisements are logged in their reception sequence, automatically labeled with related MAC address.
+
 *construct-gallery* is based on [wxPython](https://www.wxpython.org/) and [construct-editor](https://github.com/timrid/construct-editor): specifically, it relies on the excellent editing widgets provided by the *construct-editor* module and offers a superset of features compared with its standard [GUI](https://github.com/timrid/construct-editor/blob/main/construct_editor/main.py). *construct* is a powerful, declarative, symmetrical parser and builder for binary data.
 
 ## Main functionalities
 
 - Ready-to-use, cross-platform GUI
-- API widgets
+- Python API widgets for all functionalities
 - The tool allows defining a gallery of *construct* formats, optionally associated to samples, which can be dynamically added, edited or predefined.
 - Hex bytes can be collected into a gallery of samples, then renamed and reordered.
 - Samples are listed in the left panel, shown as hex bytes in the central panel and then parsed to browsable *construct* structures in the right panel.
@@ -27,10 +29,11 @@ The *construct* format shall be developed in a Python program through any IDE or
   - The left menu panel allows renaming labels and changing attribute labels. Also, by double-clicking an unused area of the left panel, new frames can be added and then labelled; subsequently, specific attributes can be associated. Samples can be repositioned, or deleted.
   - The hex editor (central panel) allows any kind of editing and copy/paste. Sequences of bytes can be pasted [in a number of different formats](https://github.com/timrid/construct-editor/pull/17#issuecomment-1367582581). Also, a special checkbox enables pasting Python expressions. Debugging tools are also provided (invoked with the right click of the mouse after selecting a sequence of bytes), to insert or convert bytes into a wide set of numeric forms as well as strings; these debug panels can be used to quickly check the most appropriate conversion method for a sequence of bytes.
 
-When also *bleak* is installed, the GUI includes a BLE Advertisement monitoring tool. Advertisements are logged in their reception sequence, automatically labeled with related MAC address.
+The included BLE scanner predefines the *construct-gallery* configuration in order to manage MAC addresses, listen for BLE advertisements and log them sequentially; the monitor engine can be started and stopped through buttons and the *BleakScannerConstruct* API also allows an auto-start option.
 
 - A filter button can be used to enter a specific MAC address to restrict logging, a portion of it or a sequence of addresses, as well as BLE local names.
 - When starting the BLE reception, a debug window is opened in background, with the possibility to control the debug level and clear the produced data.
+- Active and passive scanning modes are both managed by the *BleakScannerConstruct* API through the *bleak_scanner_kwargs* parameter. If passive mode is enabled (e.g., `bleak_scanner_kwargs={'scanning_mode': 'passive'}`), the *BleakScannerConstruct* widget automatically detects whether [bluez](https://github.com/bluez/bluez) is used by the *bleak* backend (e.g., Linux) and configures it appropriately; in this case, the component uses [hcitool](https://github.com/bluez/bluez/wiki/hcitool) and requires *sudo* access to this command. Also, the `--experimental` flag in BlueZ [is needed](https://bluez-cheat-sheet.readthedocs.io/en/latest/) to enable the Advertising Monitor.
 
 ## Example of basic usage
 
