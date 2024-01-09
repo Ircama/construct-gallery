@@ -1179,6 +1179,9 @@ Preview of a sample usage of *ConfigEditorPanel*:
 ![Preview of a sample usage of ConfigEditorPanel](https://github.com/pvvx/ATC_MiThermometer/raw/master/python-interface/images/atc_mi_config.gif)
 
 <!---
-INTERNAL NOTES HERE
-- add notes related to the -b option
+INTERNAL NOTES HERE:
+- Add notes related to the -b option
+- BleakScannerConstruct API not appropriately documented
+- Document which types of adv are reported by BleakScannerConstruct and which filters when the -b option is used; mention something in the introduction too
+- Document that these tools can be used stand-alone for generic usage, but are more suitable to be integrated in specific applications
 -->
